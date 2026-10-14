@@ -233,3 +233,11 @@ Start by inspecting the repository, then propose the implementation steps and be
 - The friend is very busy. Never make any task depend on him.
 - Environment: Windows, PowerShell, VS Code, Python 3.13, Node 24.
   Repo: github.com/muhilvannan16/pathwaypulse.
+
+## Deployment addendum
+The full deployment and public-launch requirements are in
+docs/deployment-requirements.md. The deadline-critical parts are a
+controlled test deployment (Vercel + Render + Supabase), server-side
+validation, rate limiting, moderator-only status changes, and a
+flagging mechanism. The full public launch, maintenance plan, and PWA
+are post-competition.
