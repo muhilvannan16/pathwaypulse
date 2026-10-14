@@ -1,0 +1,537 @@
+/* PathwayPulse styles.
+   Colors live in CSS variables so the whole look can be changed in one place. */
+
+:root {
+  --navy: #0b2540;
+  --navy-soft: #44546a; /* secondary text, 7:1 on white */
+  --teal: #0f766e; /* primary actions, 5.5:1 against white text */
+  --teal-dark: #0b5f59;
+  --bg: #f4f7f9;
+  --card: #ffffff;
+  --border: #d5dee6;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(11, 37, 64, 0.06);
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--navy);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--navy);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--teal-dark);
+}
+
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 3px solid var(--navy);
+  outline-offset: 2px;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -60px;
+  z-index: 3000;
+  background: var(--navy);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+}
+.skip-link:focus {
+  top: 8px;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 32px;
+  padding-block: 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand__logo {
+  flex: none;
+}
+.brand__name {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.brand__tagline {
+  color: var(--navy-soft);
+  font-size: 0.95rem;
+}
+.mission {
+  max-width: 52ch;
+  color: var(--navy-soft);
+}
+
+/* ---------- Notices ---------- */
+.notice-bar {
+  background: #eaf4f3;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.925rem;
+}
+.notice-bar__inner {
+  display: grid;
+  gap: 6px;
+  padding-block: 10px;
+}
+.notice--sample {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.sample-badge,
+.sample-tag {
+  display: inline-block;
+  background: #fff4db;
+  color: #6b4200;
+  border: 1px solid #e3b866;
+  border-radius: 999px;
+  padding: 1px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---------- Main layout ---------- */
+main {
+  padding-block: 20px 32px;
+}
+main > * + * {
+  margin-top: 16px;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+.hint {
+  color: var(--navy-soft);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+/* ---------- Stat cards ---------- */
+.stats__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+}
+.stat-card dt {
+  color: var(--navy-soft);
+  font-size: 0.9rem;
+}
+.stat-card dd {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ---------- Filters ---------- */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 200px;
+}
+.field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+select {
+  font: inherit;
+  color: var(--navy);
+  background: #fff;
+  border: 1px solid #8a9aab;
+  border-radius: 8px;
+  padding: 9px 10px;
+  min-height: 44px;
+}
+select:disabled {
+  background: #eef2f5;
+  color: #5b6b7c;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.btn--primary {
+  background: var(--teal);
+  color: #fff;
+}
+.btn--primary:hover {
+  background: var(--teal-dark);
+}
+.btn--secondary {
+  background: #fff;
+  color: var(--navy);
+  border-color: #8a9aab;
+}
+.btn--secondary:hover:not(:disabled) {
+  background: #eef2f5;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- Explore layout: map then list (phones), side by side (desktop) ---------- */
+.explore {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .explore {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: start;
+  }
+  .explore__map {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+/* ---------- Map ---------- */
+.map-wrap {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background: #e5ecf0;
+}
+/* The map itself is keyboard-focusable (Leaflet adds tabindex). Draw the focus
+   ring on the wrapper, same style as the buttons, because the wrapper's
+   overflow:hidden would clip an outline drawn on the map. */
+.map-wrap:has(.map:focus-visible) {
+  outline: 3px solid var(--navy);
+  outline-offset: 2px;
+}
+.map:focus-visible {
+  outline: none;
+}
+.map {
+  height: 55vh;
+  min-height: 320px;
+  width: 100%;
+}
+@media (min-width: 900px) {
+  .map {
+    height: calc(100vh - 150px);
+    max-height: 640px;
+  }
+}
+.map-warning {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 28px;
+  z-index: 1000;
+  background: #fff4db;
+  color: #6b4200;
+  border: 1px solid #e3b866;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Map pins: solid color + a symbol, so color is never the only signal. */
+.pp-marker {
+  background: none;
+  border: 0;
+}
+.pp-pin {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 2px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(11, 37, 64, 0.5);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+}
+.pp-pin--pending {
+  background: #b45309;
+}
+.pp-pin--verified {
+  background: #0f766e;
+}
+.pp-pin--submitted {
+  background: #1d4ed8;
+}
+.pp-pin--resolved {
+  background: #15803d;
+}
+.pp-pin--unknown {
+  background: #44546a;
+}
+.pp-pin--selected {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  box-shadow: 0 0 0 3px var(--navy), 0 2px 6px rgba(11, 37, 64, 0.6);
+}
+.leaflet-marker-icon:focus-visible .pp-pin {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--navy);
+}
+.popup__title,
+.popup__line {
+  display: block;
+}
+.popup__sample {
+  margin-top: 4px;
+  font-weight: 700;
+  color: #6b4200;
+}
+
+/* ---------- Report list ---------- */
+.report-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.report-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.report-card:hover {
+  border-color: #8a9aab;
+}
+.report-card--selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px var(--teal);
+}
+.report-card > span {
+  display: block;
+}
+.report-card__top {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.report-card__title {
+  font-weight: 700;
+}
+.report-card__meta {
+  color: var(--navy-soft);
+  font-size: 0.875rem;
+  margin-top: 2px;
+}
+.report-card__desc {
+  margin-top: 6px;
+  font-size: 0.925rem;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- Status badges (text + symbol + color) ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 1px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.badge--pending {
+  background: #fff4db;
+  color: #6b4200;
+  border-color: #e3b866;
+}
+.badge--verified {
+  background: #dff4f1;
+  color: #0a4f49;
+  border-color: #8fd0c8;
+}
+.badge--submitted {
+  background: #e3eafb;
+  color: #1e3a8a;
+  border-color: #a5b8ee;
+}
+.badge--resolved {
+  background: #dcf5e3;
+  color: #14532d;
+  border-color: #8fd3a5;
+}
+.badge--unknown {
+  background: #eef2f5;
+  color: var(--navy);
+  border-color: var(--border);
+}
+
+/* ---------- Loading / error / empty states ---------- */
+.state {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  background: var(--card);
+  border: 1px dashed #8a9aab;
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.state__title {
+  font-weight: 700;
+}
+.state__detail {
+  color: var(--navy-soft);
+  font-size: 0.875rem;
+}
+.state--error {
+  border: 1px solid #b42318;
+  border-style: solid;
+  background: #fff5f4;
+}
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  color: var(--navy-soft);
+  font-size: 0.9rem;
+}
+.site-footer__inner {
+  display: grid;
+  gap: 6px;
+  padding-block: 16px;
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 480px) {
+  .stat-card {
+    padding: 10px;
+  }
+  .stat-card dd {
+    font-size: 1.5rem;
+  }
+}
+
+/* Respect "reduce motion" settings. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .leaflet-fade-anim .leaflet-popup {
+    transition: none;
+  }
+}
