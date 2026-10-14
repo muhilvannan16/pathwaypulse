@@ -1,4 +1,5 @@
 import { DATA_SOURCE } from '../api/reports.js'
+import { OFFICIAL_REPORT_URL } from '../constants.js'
 
 export default function NoticeBar() {
   return (
@@ -15,9 +16,13 @@ export default function NoticeBar() {
         )}
         <p className="notice">
           <strong>Not an official city app.</strong> PathwayPulse is an
-          independent community project. Nothing here is sent to the City of
-          Rochester Hills, and community observations are unverified unless
-          their status says otherwise.
+          independent community project. PathwayPulse does not send reports to
+          the city. To make an official report, use the{' '}
+          <a href={OFFICIAL_REPORT_URL}>
+            City of Rochester Hills’ Report a Concern page
+          </a>
+          . Community observations are unverified unless their status says
+          otherwise.
         </p>
       </div>
     </section>

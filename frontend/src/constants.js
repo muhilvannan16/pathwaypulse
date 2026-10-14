@@ -35,6 +35,6 @@ export const STATUS_LABELS = {
 export const ROCHESTER_HILLS_CENTER = [42.658, -83.15]
 export const DEFAULT_ZOOM = 12
 
-// General city website. TODO (Muhil): replace with the exact official
-// reporting page after checking it yourself.
-export const OFFICIAL_SITE_URL = 'https://www.rochesterhills.org'
+// Where people make an official report (the City of Rochester Hills' Report a Concern page).
+export const OFFICIAL_REPORT_URL =
+  'https://rochesterhills.maps.arcgis.com/apps/instant/reporter/index.html?appid=fa2a4da97b254606a231c14d7647b79b'
