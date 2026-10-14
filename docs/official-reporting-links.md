@@ -1,5 +1,5 @@
-# The Offical reparting links used by Rochester Hills
-The City of Rochester Hills officially uses SeeClickFix to track community issues. You can report sidewalk damage, blockages, or other public right-of-way concerns online through the Rochester Hills SeeClickFix Portal.
+# Official reporting links for Rochester Hills
+To report a damaged, blocked, or missing sidewalk or pathway in Rochester Hills, use the City of Rochester Hills “Report a Concern” page (linked below). PathwayPulse does not send reports to the city.
 
 ## Where to report the issue
 
