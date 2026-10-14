@@ -69,4 +69,99 @@ Implement these safeguards before accepting real public reports:
 - Avoid collecting unnecessary personal information.
 - Warn users not to upload identifiable people, license plates, or private information in photos.
 - Clearly label new or unverified community observations.
-- Allow inappropriate reports to be flagged
+- Allow inappropriate reports to be flagged for review.
+- Restrict moderation actions to authorized moderators.
+- Only display a report as officially submitted to an agency if that submission actually occurred.
+- Only mark reports resolved when there is reasonable supporting evidence.
+- Provide clear instructions for contacting the appropriate authority directly when a user needs to make an official report.
+
+Use fictional, clearly labeled sample reports during development. Do not present invented observations or statistics as real community data.
+
+## 6. Real-User Testing Plan
+
+Before inviting the wider public, conduct a small usability test with a few volunteers, such as classmates, family members, or other willing testers.
+
+Ask them to try tasks such as:
+
+1. Open the public website on a phone or computer.
+2. Find and open an existing report.
+3. Filter reports by category or status.
+4. Submit a test report.
+5. Refresh the page and check whether the report remains available.
+6. Explain what a report's status means.
+
+Record actual problems, confusion, and suggestions. Fix important issues and repeat the relevant tests.
+
+Use test data or a controlled test environment for early testing. Do not ask volunteers to submit fake reports to public community data. If production testing is necessary, clearly mark test submissions and remove them afterward in accordance with the app's policies.
+
+Do not claim a certain number of testers, successful tests, or user improvements unless those results were actually recorded.
+
+## 7. Production Readiness Checklist
+
+Before announcing the public launch, verify:
+
+- The frontend loads through its public HTTPS URL.
+- The API is reachable and correctly configured.
+- The frontend communicates with the production API.
+- Database records persist across refreshes and new sessions.
+- Invalid inputs are rejected with useful error messages.
+- Unauthorized users cannot perform moderator actions.
+- Database policies and credentials have been reviewed.
+- API errors, loading states, and unavailable services are handled gracefully.
+- The app is usable on mobile screens and with keyboard navigation.
+- Map attribution and hosting terms are respected.
+- Photo upload validation is tested if photos are supported.
+- No secrets, debug credentials, or sensitive information are committed to the repository.
+- The README explains setup, configuration, deployment, testing, and known limitations.
+
+Only call the app production-ready after the relevant checks have passed. If a required security feature is incomplete, explain the limitation and fix it before opening that functionality to the public.
+
+## 8. Maintenance After Launch
+
+Plan for continued use after the competition:
+
+- Document how to deploy updates.
+- Keep dependencies reasonably up to date.
+- Monitor application errors and hosting usage.
+- Review and moderate community submissions.
+- Document how to back up and recover important data where supported.
+- Keep track of hosting limits and costs.
+- Identify who will maintain the app and manage its accounts after launch.
+- Provide a way for users to report technical problems or inappropriate content.
+
+Do not promise permanent uptime or free hosting.
+
+## 9. Optional Future Feature
+
+Consider making the website installable as a Progressive Web App (PWA) after the main app is working and deployed. This could allow users to add it to their phone's home screen.
+
+This is optional. Do not delay the essential reporting, database, security, or deployment work to implement it.
+
+## 10. Development Workflow
+
+Work incrementally rather than generating the entire application at once.
+
+First inspect the repository and summarize the existing files, current implementation, and missing pieces. Preserve existing work and avoid overwriting files unnecessarily.
+
+Then propose a phased implementation plan:
+
+1. Build the responsive frontend and interactive map.
+2. Implement report creation, listing, details, and filtering.
+3. Build the Python FastAPI backend and validation.
+4. Connect the database and verify persistence.
+5. Implement moderation, permissions, and security controls.
+6. Test the application locally and with automated tests.
+7. Deploy a controlled test version.
+8. Conduct small-group usability testing and fix issues.
+9. Deploy the public production version.
+10. Update the README and prepare the Congressional App Challenge demonstration.
+
+For each phase, explain what was implemented, which files changed, how to run and test it, and what remains unfinished.
+
+Do not claim a deployment or test succeeded without verifying the result. Do not invent hosting credentials, environment variables, domains, or external service configuration.
+
+## Final Objective
+
+Deliver a secure, usable, responsive, publicly accessible PathwayPulse web app that works on desktop and mobile browsers, uses Python meaningfully in its backend, stores real reports persistently, and has been tested with a small group before wider public use.
+
+The result must be suitable for a Congressional App Challenge demonstration and designed for responsible continued use after the competition.
