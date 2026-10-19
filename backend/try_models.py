@@ -23,6 +23,7 @@ def try_it(label, **changes):
 
 try_it("valid")
 try_it("title too short", title="Hi")
-try_it("bad category", category="pothole")
+try_it("bad category", category="potholes")
 try_it("latitude out of range", latitude=200)
 try_it("extra status field", status="Resolved")
+try_it("blank title", title="      ")     # <-- NEW LINE goes here, at the bottom
