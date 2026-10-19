@@ -1,14 +1,18 @@
-# PathwayPulse backend: Milestone 1b
-# ReportCreate = what a PUBLIC user is allowed to send when submitting a report.
+# PathwayPulse backend
+# ReportCreate = what a PUBLIC user may send.  Report = what the SERVER stores and returns.
 
+from datetime import datetime                      # NEW import, for created_at
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 Category = Literal["damaged_path", "blocked_path", "accessibility_barrier", "missing_connection"]
 
+# NEW: the four statuses, defined next to Category
+Status = Literal["Pending Review", "Verified", "Submitted to Agency", "Resolved"]
+
 
 class ReportCreate(BaseModel):
-    # 2. Config goes at the TOP of the class, before the fields
+    # Reject unknown fields instead of silently dropping them; trim spaces from text.
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     title: str = Field(..., min_length=5, max_length=100)
@@ -16,4 +20,10 @@ class ReportCreate(BaseModel):
     category: Category
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
-    # No status, id or created_at: the server sets those.
+
+
+# NEW: everything in ReportCreate, plus the fields only the server controls
+class Report(ReportCreate):
+    id: int
+    status: Status = "Pending Review" 
+    created_at: datetime
