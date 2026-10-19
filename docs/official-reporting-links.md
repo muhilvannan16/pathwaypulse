@@ -31,3 +31,8 @@ For an emergency road condition, RCOC says not to use its web form. Call **877-8
 - [City of Rochester Hills — Department of Public Services](https://www.rochesterhills.org/departments/public_services_engineering/index.php)
 - [Road Commission for Oakland County — Report an Issue](https://www.rcocweb.org/FormCenter/Contact-Us-4/Report-An-Issue-in-OAKLAND-COUNTY-MICHIG-43)
 
+ The City identifies the form as a **non-emergency** reporting route; it directs emergencies to 911 and provides the City’s main number, 248-656-4600, for help outside business hours.
+- A request requires a **category type**, **request type**, **details**, and a **location**.
+- The form says contact information is **optional** when submitting a request.
+- It supports **attachments**, so a resident can add a photo or other supporting file; the City says submitted attachments, location, request type, and detailed description will be public with the request.
+- The form displays a **Reports** area, but it does not currently show an individual request-status tracker. When checked on October 18, 2026, that area displayed: “Error Web map does not contain any editable layers” and “Total items: 0.”
