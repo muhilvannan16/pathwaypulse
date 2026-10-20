@@ -6,6 +6,7 @@
   --navy-soft: #44546a; /* secondary text, 7:1 on white */
   --teal: #0f766e; /* primary actions, 5.5:1 against white text */
   --teal-dark: #0b5f59;
+  --danger: #b42318; /* error text, 6.5:1 on white */
   --bg: #f4f7f9;
   --card: #ffffff;
   --border: #d5dee6;
@@ -209,7 +210,9 @@ main > * + * {
   font-weight: 600;
   font-size: 0.9rem;
 }
-select {
+select,
+input,
+textarea {
   font: inherit;
   color: var(--navy);
   background: #fff;
@@ -217,10 +220,21 @@ select {
   border-radius: 8px;
   padding: 9px 10px;
   min-height: 44px;
+  width: 100%;
 }
 select:disabled {
   background: #eef2f5;
   color: #5b6b7c;
+}
+textarea {
+  resize: vertical;
+}
+input[readonly] {
+  background: #eef2f5;
+}
+[aria-invalid='true'] {
+  border-color: var(--danger);
+  border-width: 2px;
 }
 
 /* ---------- Buttons ---------- */
@@ -497,6 +511,195 @@ select:disabled {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ---------- Main navigation ---------- */
+.site-nav {
+  border-top: 1px solid var(--border);
+}
+.site-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  list-style: none;
+  margin-block: 0;
+}
+.site-nav__link {
+  display: inline-block;
+  padding: 10px 2px 8px;
+  color: var(--navy);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+.site-nav__link:hover {
+  border-bottom-color: var(--border);
+}
+.site-nav__link[aria-current='page'] {
+  color: var(--teal-dark);
+  border-bottom-color: var(--teal);
+}
+main:focus {
+  outline: none;
+}
+
+/* ---------- Page headings and intro text ---------- */
+.page-title {
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+.page-title:focus {
+  outline: none; /* focus moves here on page change; it is a heading, not a control */
+}
+.page-intro {
+  max-width: 68ch;
+  color: var(--navy-soft);
+}
+
+/* ---------- Report form ---------- */
+.form-card {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.form-card .field {
+  flex: none;
+}
+.form-card .hint {
+  margin-bottom: 0;
+}
+.required {
+  font-weight: 400;
+  color: var(--navy-soft);
+}
+.field-error {
+  color: var(--danger);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+.field-warning {
+  background: #fff4db;
+  color: #6b4200;
+  border: 1px solid #e3b866;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+.error-summary {
+  border: 2px solid var(--danger);
+  background: #fff5f4;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.error-summary h3 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: var(--danger);
+}
+.error-summary ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+.link-button {
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  color: var(--danger);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.form-actions a.btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.submit-status {
+  color: var(--navy-soft);
+  font-size: 0.9rem;
+}
+.success-panel {
+  border-color: var(--teal);
+  border-width: 2px;
+}
+.success-panel:focus {
+  outline: none;
+}
+.success-panel h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+/* ---------- Location picker ---------- */
+.location {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.location:focus {
+  outline: none;
+}
+.location legend {
+  padding-inline: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.location .hint {
+  margin: 0;
+}
+.map.map--picker {
+  height: 340px;
+  min-height: 280px;
+  max-height: none;
+}
+.coords {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.location-status {
+  font-size: 0.9rem;
+  color: var(--navy-soft);
+}
+.pp-pin--picked {
+  background: var(--navy);
+  font-size: 18px;
+}
+.alt-location {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.alt-location summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+}
+.alt-location__body {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding-block: 8px;
+}
+.alt-location__body .coords {
+  width: 100%;
 }
 
 /* ---------- Footer ---------- */

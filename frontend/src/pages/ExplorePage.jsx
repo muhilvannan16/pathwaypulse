@@ -95,6 +95,9 @@ export default function ExplorePage() {
 
   return (
     <>
+      <h2 id="page-heading" className="page-title" tabIndex={-1}>
+        Explore reports
+      </h2>
       <StatCards
         total={total}
         pending={pending}

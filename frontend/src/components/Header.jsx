@@ -1,4 +1,4 @@
-export default function Header() {
+export default function Header({ route }) {
   return (
     <header className="site-header">
       <div className="container site-header__inner">
@@ -31,6 +31,28 @@ export default function Header() {
           Rochester Hills, Michigan, and see where barriers may be showing up.
         </p>
       </div>
+      <nav className="site-nav" aria-label="Main">
+        <ul className="container site-nav__list">
+          <li>
+            <a
+              href="#/"
+              className="site-nav__link"
+              aria-current={route === 'explore' ? 'page' : undefined}
+            >
+              Explore reports
+            </a>
+          </li>
+          <li>
+            <a
+              href="#/report"
+              className="site-nav__link"
+              aria-current={route === 'report' ? 'page' : undefined}
+            >
+              Report a barrier
+            </a>
+          </li>
+        </ul>
+      </nav>
     </header>
   )
 }

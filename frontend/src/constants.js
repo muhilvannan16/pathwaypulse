@@ -31,6 +31,23 @@ export const STATUS_LABELS = {
   Resolved: 'Resolved',
 }
 
+// Text limits. These MIRROR the backend (backend/app/models.py) so the form
+// can show friendly errors early. The server is still the one that enforces
+// them; if you change a limit in Python, change it here too.
+export const TITLE_MIN = 5
+export const TITLE_MAX = 100
+export const DESCRIPTION_MIN = 10
+export const DESCRIPTION_MAX = 1000
+
+// Rough box around Rochester Hills. Used only to WARN (never block) when a
+// chosen location looks outside the city, e.g. a typo in the longitude sign.
+export const ROCHESTER_HILLS_BOUNDS = {
+  south: 42.55,
+  north: 42.76,
+  west: -83.3,
+  east: -83.0,
+}
+
 // Rochester Hills, Michigan (approximate city center).
 export const ROCHESTER_HILLS_CENTER = [42.658, -83.15]
 export const DEFAULT_ZOOM = 12

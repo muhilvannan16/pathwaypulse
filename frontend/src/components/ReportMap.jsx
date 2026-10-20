@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, Popup, useMap } from 'react-leaflet'
 import {
   CATEGORY_LABELS,
   DEFAULT_ZOOM,
@@ -8,6 +8,7 @@ import {
   STATUS_LABELS,
 } from '../constants.js'
 import { isValidCoordinate, prefersReducedMotion, statusMeta } from '../utils.js'
+import OsmTileLayer from './OsmTileLayer.jsx'
 
 // Markers are small CSS-drawn pins (divIcon) instead of Leaflet's default
 // image icons, which break when bundled with Vite. The HTML here is built
@@ -63,14 +64,9 @@ export default function ReportMap({ reports, selectedReport, isSample, onSelect 
         minZoom={9}
         scrollWheelZoom
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-          eventHandlers={{
-            tileerror: () => setTilesFailed(true),
-            tileload: () => setTilesFailed(false),
-          }}
+        <OsmTileLayer
+          onFailed={() => setTilesFailed(true)}
+          onLoaded={() => setTilesFailed(false)}
         />
         {mappable.map((report) => {
           const selected = selectedReport?.id === report.id
