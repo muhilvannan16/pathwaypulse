@@ -1,4 +1,6 @@
 # PathwayPulse backend: Milestone 1c
+from datetime import datetime, timezone          # add to the imports at the top
+from app.models import Report, ReportCreate      # extend the existing import
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.models import Report
@@ -38,6 +40,18 @@ reports: list[Report] = [
     ),
 ]
 
+
+
+@app.post("/reports", response_model=Report, status_code=201)
+def create_report(data: ReportCreate):
+    new_id = max(report.id for report in reports) + 1 if reports else 1
+    report = Report(
+        **data.model_dump(),
+        id=new_id,
+        created_at=datetime.now(timezone.utc),                        # the current UTC time
+    )
+    reports.append(report)                        # add it to the list
+    return report
 
 @app.get("/health")
 def health():
