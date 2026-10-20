@@ -1,10 +1,17 @@
 # PathwayPulse backend: Milestone 1c
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 from app.models import Report
 
 app = FastAPI(title="PathwayPulse API")
 
+# NEW: tell browsers which website is allowed to read this API's responses.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["GET", "POST"],                 
+    allow_headers=["Content-Type"],
+)
 
 # Temporary "database": a plain list that resets when the server restarts.
 # Supabase replaces this later.
