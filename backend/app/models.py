@@ -40,3 +40,5 @@ class Report(ReportCreate):
     id: int
     status: Status = "Pending Review"
     created_at: datetime
+    photo_path: str | None = None
+    reviewed_at: datetime | None = None
