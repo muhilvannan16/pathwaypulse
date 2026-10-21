@@ -1,14 +1,18 @@
 # PathwayPulse backend
 # ReportCreate = what a PUBLIC user may send.  Report = what the SERVER stores and returns.
 
-from datetime import datetime                      # NEW import, for created_at
-from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from datetime import datetime
+from typing import Literal, Self
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Category = Literal["damaged_path", "blocked_path", "accessibility_barrier", "missing_connection"]
 
-# NEW: the four statuses, defined next to Category
 Status = Literal["Pending Review", "Verified", "Submitted to Agency", "Resolved"]
+
+MIN_LAT = 42.55
+MAX_LAT = 42.78
+MIN_LON = -83.30   # negative: west of Greenwich
+MAX_LON = -83.00
 
 
 class ReportCreate(BaseModel):
@@ -21,9 +25,18 @@ class ReportCreate(BaseModel):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
 
+    @model_validator(mode="after")
+    def check_service_area(self) -> Self:
+        inside = (
+            MIN_LAT <= self.latitude <= MAX_LAT
+            and MIN_LON <= self.longitude <= MAX_LON
+        )
+        if not inside:
+            raise ValueError("Location must be within the Rochester Hills area")
+        return self                                  # an "after" validator must return self
 
-# NEW: everything in ReportCreate, plus the fields only the server controls
+
 class Report(ReportCreate):
     id: int
-    status: Status = "Pending Review" 
+    status: Status = "Pending Review"
     created_at: datetime

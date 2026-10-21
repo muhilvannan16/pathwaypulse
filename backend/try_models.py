@@ -27,6 +27,8 @@ try_it("bad category", category="potholes")
 try_it("latitude out of range", latitude=200)
 try_it("extra status field", status="Resolved")
 try_it("blank title", title="      ")     # <-- NEW LINE goes here, at the bottom
+try_it("outside service area", longitude=83.1)     # positive: Asia
+try_it("far outside, valid numbers", latitude=10, longitude=-83.15)
 
 r = Report(id=1, title="Cracked sidewalk", description="Large crack near the corner.",
            category="damaged_path", latitude=42.658, longitude=-83.15,
