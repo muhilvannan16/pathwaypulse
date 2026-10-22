@@ -490,6 +490,10 @@ input[readonly] {
 .state__title {
   font-weight: 700;
 }
+.state__note {
+  color: var(--navy-soft);
+  font-size: 0.95rem;
+}
 .state__detail {
   color: var(--navy-soft);
   font-size: 0.875rem;

@@ -31,6 +31,10 @@ export const STATUS_LABELS = {
   Resolved: 'Resolved',
 }
 
+// Shown (and announced to screen readers) when the server is slow to answer,
+// e.g. the free hosting plan is waking up after being idle.
+export const WAKING_MESSAGE = 'The test server is waking up. This can take up to a minute.'
+
 // Text limits. These MIRROR the backend (backend/app/models.py) so the form
 // can show friendly errors early. The server is still the one that enforces
 // them; if you change a limit in Python, change it here too.
