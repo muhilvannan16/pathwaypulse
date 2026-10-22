@@ -12,6 +12,12 @@
 //                    ONLY; the server sets id, status, created_at (201)
 //   422 error body: {"detail":[{"loc":["body","title"],"msg":"...","type":"..."}]}
 // There is no GET /stats yet, so getStats() counts the reports list itself.
+//
+// Slow servers: the API runs on Render's free tier, which sleeps when idle and
+// can need about a minute to wake up. So every request:
+//   - after SLOW_NOTICE_MS calls the caller's onSlow() (the UI shows a calm
+//     "waking up" message) and KEEPS WAITING,
+//   - gives up after REQUEST_TIMEOUT_MS with an ApiError whose timedOut is true.
 
 import { CATEGORIES, STATUSES } from '../constants.js'
 import { SAMPLE_REPORTS } from '../data/sampleReports.js'
@@ -26,6 +32,12 @@ export const DATA_SOURCE = MODE
 
 const FAKE_DELAY_MS = 400
 
+// Show the "waking up" notice after this long, give up after the timeout.
+const SLOW_NOTICE_MS = 4000
+const REQUEST_TIMEOUT_MS = 75000
+// Used only by the ?demo=slow test hook.
+const DEMO_SLOW_MS = 6000
+
 // ---------------------------------------------------------------- errors
 
 // Thrown for every failed request so components can show a clear message.
@@ -33,13 +45,44 @@ const FAKE_DELAY_MS = 400
 //   status       - HTTP status, or 0 when the server could not be reached
 //   fieldErrors  - {fieldName: message} taken from a 422 response
 //   generalErrors- 422 messages that don't belong to a single form field
+//   timedOut     - true when the server did not answer within the timeout
 export class ApiError extends Error {
-  constructor(message, { status = 0, fieldErrors = {}, generalErrors = [] } = {}) {
+  constructor(
+    message,
+    { status = 0, fieldErrors = {}, generalErrors = [], timedOut = false } = {},
+  ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.fieldErrors = fieldErrors
     this.generalErrors = generalErrors
+    this.timedOut = timedOut
+  }
+}
+
+function timeoutError() {
+  return new ApiError('The server did not answer within about a minute.', {
+    status: 0,
+    timedOut: true,
+  })
+}
+
+// Runs run(signal) with the slow-server behaviour described at the top of
+// this file. run() must pass the signal to fetch() so the request is really
+// cancelled at the timeout.
+async function withSlowNotice(run, onSlow) {
+  const controller = new AbortController()
+  const slowTimer = setTimeout(() => onSlow?.(), SLOW_NOTICE_MS)
+  const timeoutTimer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+  try {
+    return await run(controller.signal)
+  } catch (error) {
+    // Aborting makes fetch() fail like a network error; report it as a timeout.
+    if (controller.signal.aborted) throw timeoutError()
+    throw error
+  } finally {
+    clearTimeout(slowTimer)
+    clearTimeout(timeoutTimer)
   }
 }
 
@@ -90,10 +133,10 @@ async function errorFromResponse(response) {
   })
 }
 
-async function request(path, options) {
+async function request(path, options, signal) {
   let response
   try {
-    response = await fetch(`${API_URL}${path}`, options)
+    response = await fetch(`${API_URL}${path}`, { ...options, signal })
   } catch {
     // fetch() only rejects when the network request itself fails.
     throw new ApiError(NETWORK_MESSAGE, { status: 0 })
@@ -144,39 +187,58 @@ function wait(ms = FAKE_DELAY_MS) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-// Developer test hooks, work in both modes:
-//   /?demo=error  -> getReports() fails, to see the error state
-//   /?demo=empty  -> getReports() returns no reports, to see the empty state
+// Developer test hooks, work in both modes (add to the page URL):
+//   /?demo=error    -> getReports() fails, to see the error state
+//   /?demo=empty    -> getReports() returns no reports, to see the empty state
+//   /?demo=slow     -> requests take ~6 s, to see the "waking up" message
+//   /?demo=timeout  -> the "waking up" message, then a timeout error
+//                      (slow and timeout also affect form submits)
 function demoMode() {
   return new URLSearchParams(window.location.search).get('demo')
 }
 
+async function applySlowDemo(demo) {
+  if (demo === 'slow') await wait(DEMO_SLOW_MS)
+  if (demo === 'timeout') {
+    await wait(SLOW_NOTICE_MS + 500)
+    throw timeoutError()
+  }
+}
+
 // ------------------------------------------------------------ public API
 
-export async function getReports() {
-  const demo = demoMode()
-  if (demo === 'error') {
-    await wait(150)
-    throw new ApiError('Simulated network failure (demo=error).', { status: 0 })
-  }
-  if (demo === 'empty') {
-    await wait(150)
-    return []
-  }
-  if (MODE === 'sample') {
-    await wait()
-    return sampleReports.map((r) => ({ ...r }))
-  }
-  const data = await request('/reports')
-  if (!Array.isArray(data)) {
-    throw new ApiError('The server sent an answer we could not read.')
-  }
-  return data.map(normalizeReport)
+// options.onSlow is called once if the server takes longer than a few seconds.
+export async function getReports({ onSlow } = {}) {
+  return withSlowNotice(async (signal) => {
+    const demo = demoMode()
+    if (demo === 'error') {
+      await wait(150)
+      throw new ApiError('Simulated network failure (demo=error).', { status: 0 })
+    }
+    if (demo === 'empty') {
+      await wait(150)
+      return []
+    }
+    await applySlowDemo(demo)
+    if (MODE === 'sample') {
+      await wait()
+      return sampleReports.map((r) => ({ ...r }))
+    }
+    const data = await request('/reports', undefined, signal)
+    if (!Array.isArray(data)) {
+      throw new ApiError('The server sent an answer we could not read.')
+    }
+    return data.map(normalizeReport)
+  }, onSlow)
 }
 
 // Sends ONLY the five fields a public user may provide. The server (not the
 // browser) decides id, status and created_at.
-export async function createReport({ title, description, category, latitude, longitude }) {
+// options.onSlow is called once if the server takes longer than a few seconds.
+export async function createReport(
+  { title, description, category, latitude, longitude },
+  { onSlow } = {},
+) {
   const body = {
     title: String(title ?? '').trim(),
     description: String(description ?? '').trim(),
@@ -185,35 +247,43 @@ export async function createReport({ title, description, category, latitude, lon
     longitude,
   }
 
-  if (MODE === 'sample') {
-    await wait()
-    const errors = validateReport(body)
-    if (Object.keys(errors).length > 0) {
-      const fieldErrors = {}
-      for (const [field, message] of Object.entries(errors)) {
-        fieldErrors[field === 'location' ? 'latitude' : field] = message
-      }
-      throw new ApiError('The details are not valid.', { status: 422, fieldErrors })
-    }
-    // Mimic the server: IT sets id, status, and created_at.
-    const created = {
-      id: `sample-new-${Date.now()}`,
-      ...body,
-      status: 'Pending Review',
-      created_at: new Date().toISOString(),
-      photo_path: null,
-      reviewed_at: null,
-    }
-    sampleReports = [created, ...sampleReports]
-    return { ...created }
-  }
+  return withSlowNotice(async (signal) => {
+    await applySlowDemo(demoMode())
 
-  const data = await request('/reports', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  return normalizeReport(data)
+    if (MODE === 'sample') {
+      await wait()
+      const errors = validateReport(body)
+      if (Object.keys(errors).length > 0) {
+        const fieldErrors = {}
+        for (const [field, message] of Object.entries(errors)) {
+          fieldErrors[field === 'location' ? 'latitude' : field] = message
+        }
+        throw new ApiError('The details are not valid.', { status: 422, fieldErrors })
+      }
+      // Mimic the server: IT sets id, status, and created_at.
+      const created = {
+        id: `sample-new-${Date.now()}`,
+        ...body,
+        status: 'Pending Review',
+        created_at: new Date().toISOString(),
+        photo_path: null,
+        reviewed_at: null,
+      }
+      sampleReports = [created, ...sampleReports]
+      return { ...created }
+    }
+
+    const data = await request(
+      '/reports',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+      signal,
+    )
+    return normalizeReport(data)
+  }, onSlow)
 }
 
 // Counts for the whole reports list. Shape matches the planned GET /stats.

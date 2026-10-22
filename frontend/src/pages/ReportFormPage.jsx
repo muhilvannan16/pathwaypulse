@@ -9,6 +9,7 @@ import {
   OFFICIAL_REPORT_URL,
   TITLE_MAX,
   TITLE_MIN,
+  WAKING_MESSAGE,
 } from '../constants.js'
 import { validateReport } from '../validation.js'
 
@@ -35,6 +36,15 @@ const FIELD_NAMES = {
 }
 
 const serverSays = (message) => `The server says: ${message}`
+
+const NOT_SAVED_TITLE = 'Your report was not saved'
+
+// A timed-out POST may still have reached the server, so we must NOT say
+// "not saved" and must warn before a second attempt (it could be a duplicate).
+const TIMEOUT_TITLE = 'We couldn’t confirm your report'
+const TIMEOUT_MESSAGE =
+  'The test server didn’t answer in time, so we can’t tell whether your report was saved. ' +
+  'Before sending it again, check the list on the Explore reports page to see if it is already there.'
 
 // Turns a 422 ApiError into {errors, general}: messages next to the matching
 // field, plus anything that doesn't belong to one field.
@@ -70,10 +80,15 @@ export default function ReportFormPage() {
   const [values, setValues] = useState(EMPTY_VALUES)
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
+  const [formErrorTitle, setFormErrorTitle] = useState(NOT_SAVED_TITLE)
   const [phase, setPhase] = useState('idle') // idle | submitting | success
+  const [waking, setWaking] = useState(false) // server is slow to answer
   const [created, setCreated] = useState(null)
   const [summaryTick, setSummaryTick] = useState(0) // bump to focus the error summary
   const summaryRef = useRef(null)
+  // A ref (not state) so two quick clicks/Enter presses can't both get through
+  // before React re-renders the disabled button.
+  const submittingRef = useRef(false)
   const successRef = useRef(null)
 
   useEffect(() => {
@@ -106,9 +121,10 @@ export default function ReportFormPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    if (phase === 'submitting') return // ignore double clicks
+    if (submittingRef.current) return // a submit is already in progress
 
     setFormError('')
+    setFormErrorTitle(NOT_SAVED_TITLE)
     const clientErrors = validateReport(values)
     if (Object.keys(clientErrors).length > 0) {
       setErrors(clientErrors)
@@ -117,16 +133,23 @@ export default function ReportFormPage() {
     }
 
     setErrors({})
+    submittingRef.current = true
+    setWaking(false)
     setPhase('submitting')
     try {
-      const report = await createReport(values)
+      // onSlow fires if the server takes a few seconds; we keep waiting.
+      const report = await createReport(values, { onSlow: () => setWaking(true) })
       // Only now, after the save really succeeded, do we show the confirmation.
       setCreated(report)
       setValues(EMPTY_VALUES)
       setPhase('success')
     } catch (error) {
       setPhase('idle')
-      if (error instanceof ApiError && error.status === 422) {
+      if (error instanceof ApiError && error.timedOut) {
+        setErrors({})
+        setFormErrorTitle(TIMEOUT_TITLE)
+        setFormError(TIMEOUT_MESSAGE)
+      } else if (error instanceof ApiError && error.status === 422) {
         const { errors: serverErrors, general } = mapServerErrors(error)
         setErrors(serverErrors)
         setFormError(general.map(serverSays).join(' '))
@@ -136,6 +159,9 @@ export default function ReportFormPage() {
         setFormError(`${message} Your report has not been saved.`)
       }
       setSummaryTick((n) => n + 1)
+    } finally {
+      submittingRef.current = false
+      setWaking(false)
     }
   }
 
@@ -218,7 +244,7 @@ export default function ReportFormPage() {
             aria-labelledby="error-summary-title"
           >
             <h3 id="error-summary-title">
-              {errorKeys.length > 0 ? 'Please fix the following' : 'Your report was not saved'}
+              {errorKeys.length > 0 ? 'Please fix the following' : formErrorTitle}
             </h3>
             {formError && <p>{formError}</p>}
             {errorKeys.length > 0 && (
@@ -322,11 +348,22 @@ export default function ReportFormPage() {
         />
 
         <div className="form-actions">
-          <button type="submit" className="btn btn--primary" disabled={submitting}>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            disabled={submitting}
+            aria-busy={submitting}
+          >
             {submitting ? 'Submitting…' : 'Submit report'}
           </button>
+          {/* Live region: announces "Submitting…" and, if the server is slow,
+              the waking-up message. Keep this page open while it waits. */}
           <p className="submit-status" role="status">
-            {submitting ? 'Submitting your report…' : ''}
+            {submitting
+              ? waking
+                ? `${WAKING_MESSAGE} Please keep this page open.`
+                : 'Submitting your report…'
+              : ''}
           </p>
         </div>
       </form>

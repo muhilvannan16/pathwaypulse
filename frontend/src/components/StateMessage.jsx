@@ -1,11 +1,30 @@
+import { WAKING_MESSAGE } from '../constants.js'
+
 // One component for every non-happy-path state: loading, error, and the two
 // kinds of "empty" (no data at all vs. filters matched nothing).
-export default function StateMessage({ kind, detail, onRetry, onClear }) {
+//   waking   - (loading) the server is slow; show the calm "waking up" note
+//   timedOut - (error) the server never answered within the time limit
+export default function StateMessage({ kind, detail, waking, timedOut, onRetry, onClear }) {
   if (kind === 'loading') {
+    // role="status" is a polite live region, so the waking-up note is
+    // announced to screen readers when it appears.
     return (
       <div className="state" role="status">
         <span className="spinner" aria-hidden="true" />
         <p className="state__title">Loading reports…</p>
+        {waking && <p className="state__note">{WAKING_MESSAGE}</p>}
+      </div>
+    )
+  }
+
+  if (kind === 'error' && timedOut) {
+    return (
+      <div className="state state--error" role="alert">
+        <p className="state__title">The test server didn’t respond in time.</p>
+        <p>It may still be waking up. Wait a moment, then try again.</p>
+        <button type="button" className="btn btn--primary" onClick={onRetry}>
+          Retry
+        </button>
       </div>
     )
   }
@@ -17,7 +36,7 @@ export default function StateMessage({ kind, detail, onRetry, onClear }) {
         <p>Check your internet connection and try again.</p>
         {detail && <p className="state__detail">Details: {detail}</p>}
         <button type="button" className="btn btn--primary" onClick={onRetry}>
-          Try again
+          Retry
         </button>
       </div>
     )

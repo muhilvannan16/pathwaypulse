@@ -10,13 +10,17 @@ import { isNarrowLayout } from '../utils.js'
 const NO_FILTERS = { category: '', status: '' }
 
 // This page owns ALL the state for the Explore screen:
-//   load      - loading / error / ready, plus the loaded reports
+//   load      - loading / error / ready, plus the loaded reports. While loading,
+//               `waking` turns true if the server is slow (free hosting waking
+//               up); on error, `timedOut` says the server never answered.
 //   filters   - the two dropdown values
 //   selectedId- which report is highlighted (shared by the list and the map)
 // Everything else (filtered list, counts) is calculated from those during
 // render, so it can never get out of sync.
+const LOADING = { phase: 'loading', reports: [], error: '', waking: false, timedOut: false }
+
 export default function ExplorePage() {
-  const [load, setLoad] = useState({ phase: 'loading', reports: [], error: '' })
+  const [load, setLoad] = useState(LOADING)
   const [attempt, setAttempt] = useState(0) // bump to reload
   const [filters, setFilters] = useState(NO_FILTERS)
   const [selectedId, setSelectedId] = useState(null)
@@ -24,12 +28,19 @@ export default function ExplorePage() {
 
   useEffect(() => {
     let ignore = false // avoids setting state after unmount / a newer request
-    getReports()
+    getReports({
+      // Slow server: keep waiting, but tell the person why.
+      onSlow: () => {
+        if (!ignore) setLoad((current) => (current.phase === 'loading' ? { ...current, waking: true } : current))
+      },
+    })
       .then((reports) => {
-        if (!ignore) setLoad({ phase: 'ready', reports, error: '' })
+        if (!ignore) setLoad({ ...LOADING, phase: 'ready', reports })
       })
       .catch((err) => {
-        if (!ignore) setLoad({ phase: 'error', reports: [], error: err.message })
+        if (!ignore) {
+          setLoad({ ...LOADING, phase: 'error', error: err.message, timedOut: Boolean(err.timedOut) })
+        }
       })
     return () => {
       ignore = true
@@ -37,7 +48,7 @@ export default function ExplorePage() {
   }, [attempt])
 
   function retry() {
-    setLoad({ phase: 'loading', reports: [], error: '' })
+    setLoad(LOADING)
     setAttempt((n) => n + 1)
   }
 
@@ -75,9 +86,11 @@ export default function ExplorePage() {
 
   let listContent
   if (phase === 'loading') {
-    listContent = <StateMessage kind="loading" />
+    listContent = <StateMessage kind="loading" waking={load.waking} />
   } else if (phase === 'error') {
-    listContent = <StateMessage kind="error" detail={load.error} onRetry={retry} />
+    listContent = (
+      <StateMessage kind="error" detail={load.error} timedOut={load.timedOut} onRetry={retry} />
+    )
   } else if (total === 0) {
     listContent = <StateMessage kind="empty" />
   } else if (visible.length === 0) {

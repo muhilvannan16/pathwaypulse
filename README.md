@@ -72,6 +72,8 @@ While the backend is not connected, the app reads sample reports from `frontend/
 
 - `/?demo=error` shows the "couldn't load reports" state
 - `/?demo=empty` shows the "no reports yet" state
+- `/?demo=slow` makes requests take about 6 seconds, to show the "test server is waking up" message
+- `/?demo=timeout` shows that message, then the "server didn't respond in time" state with a Retry button
 
 ## How the code is organized
 
@@ -97,6 +99,39 @@ Each report has: `id`, `title`, `description`, `category`, `latitude`, `longitud
 - **Statuses:** Pending Review, Verified, Submitted to Agency, Resolved
 
 Planned rules: new public reports always start as Pending Review. Only authorized moderators can change a status. "Submitted to Agency" will be used only after a report was actually submitted, and "Resolved" only with credible evidence.
+
+## Deploying
+
+The planned setup is **Vercel** (frontend), **Render** (Python API), and **Supabase** (database). Set the variables below in each host's dashboard. **Never commit real values**; the placeholders here are examples only. See [docs/deployment-requirements.md](docs/deployment-requirements.md) for the full requirements.
+
+### Render (backend API)
+
+| Variable | What to put there | Notes |
+| --- | --- | --- |
+| `SUPABASE_URL` | Your Supabase project URL | Supabase dashboard, Project Settings, API |
+| `SUPABASE_SERVICE_KEY` | Your Supabase **service_role** key | **Secret.** Full database access. Server only; never in the frontend |
+| `ALLOWED_ORIGINS` | The frontend's web address, e.g. `https://YOUR-APP.vercel.app` | Several addresses separated by commas, **no spaces and no trailing slash** |
+| `PYTHON_VERSION` | The Python version Render should use | Match the one you develop with (3.13); check Render's docs for the accepted format |
+
+Typical service settings (confirm against Render's current docs): root directory `backend`, build command `pip install -r requirements.txt`, start command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+
+### Vercel (frontend)
+
+| Variable | What to put there | Notes |
+| --- | --- | --- |
+| `VITE_API_URL` | The public address of the Render service, e.g. `https://YOUR-API.onrender.com` | **Public**: it is baked into the site at build time, so redeploy after changing it |
+
+Typical project settings: root directory `frontend`, build command `npm run build`, output directory `dist`. Leave `VITE_DATA_SOURCE` unset so the app uses the real API (it defaults to `api`). The site uses `#/` links for its two pages, so no rewrite rules are needed.
+
+### Order of setup
+
+1. Deploy the backend on Render and copy its address.
+2. Put that address in `VITE_API_URL` on Vercel and deploy the frontend.
+3. Put the Vercel address in `ALLOWED_ORIGINS` on Render and redeploy the backend. Until you do, the browser blocks the frontend from calling the API.
+
+### Free-tier "waking up" delay
+
+Render's free plan puts the API to sleep after about 15 minutes without traffic, and the first request afterwards can take around a minute. The app handles this: after about 4 seconds it shows "The test server is waking up. This can take up to a minute." and keeps waiting, then stops after about 75 seconds with a Retry button. If submitting a report times out, the form says it cannot tell whether the report was saved and asks people to check the list before sending it again.
 
 ## Privacy and accuracy
 
