@@ -24,9 +24,7 @@ ALLOWED_ORIGINS = [
 ]
 
 def get_client_id(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    # uvicorn already replaced the proxy's address with the real client's
     return request.client.host if request.client else "unknown"
 
 
@@ -55,7 +53,6 @@ def list_reports():
 @app.post("/reports", response_model=Report, status_code=201)
 def create_report(data: ReportCreate, request: Request):
     client_id = get_client_id(request)
-    logger.info("Report submission from client %s", client_id)  # <- TEMPORARY, remove before commit
 
     if not is_allowed(client_id, time.time()):
         raise HTTPException(
