@@ -149,6 +149,12 @@ export default function ReportFormPage() {
         setErrors({})
         setFormErrorTitle(TIMEOUT_TITLE)
         setFormError(TIMEOUT_MESSAGE)
+      } else if (error instanceof ApiError && error.status === 429) {
+        // Rate limited: the server refused this submit, so nothing was saved.
+        // error.message is the server's own explanation. Typed answers stay in
+        // the form (we never reset them on failure) and the button is usable again.
+        setErrors({})
+        setFormError(error.message)
       } else if (error instanceof ApiError && error.status === 422) {
         const { errors: serverErrors, general } = mapServerErrors(error)
         setErrors(serverErrors)

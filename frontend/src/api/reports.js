@@ -86,6 +86,9 @@ async function withSlowNotice(run, onSlow) {
   }
 }
 
+// Same sentence the backend sends with HTTP 429; used if its body is missing.
+const RATE_LIMIT_MESSAGE = 'Too many reports from this connection. Please try again later.'
+
 const NETWORK_MESSAGE =
   'We couldn’t reach the PathwayPulse server. Check your connection and try again.'
 
@@ -121,6 +124,12 @@ async function errorFromResponse(response) {
       fieldErrors,
       generalErrors,
     })
+  }
+  if (response.status === 429) {
+    // Too many requests. The backend explains it in a plain-text "detail";
+    // use that, or our own sentence if it is missing or not text.
+    const detail = typeof body?.detail === 'string' ? body.detail.trim() : ''
+    return new ApiError(detail || RATE_LIMIT_MESSAGE, { status: 429 })
   }
   if (response.status >= 500) {
     return new ApiError('The server had a problem. Please try again in a moment.', {
@@ -193,6 +202,7 @@ function wait(ms = FAKE_DELAY_MS) {
 //   /?demo=slow     -> requests take ~6 s, to see the "waking up" message
 //   /?demo=timeout  -> the "waking up" message, then a timeout error
 //                      (slow and timeout also affect form submits)
+//   /?demo=ratelimit-> submitting a report fails like HTTP 429 "too many reports"
 function demoMode() {
   return new URLSearchParams(window.location.search).get('demo')
 }
@@ -248,7 +258,12 @@ export async function createReport(
   }
 
   return withSlowNotice(async (signal) => {
-    await applySlowDemo(demoMode())
+    const demo = demoMode()
+    await applySlowDemo(demo)
+    if (demo === 'ratelimit') {
+      await wait(300)
+      throw new ApiError(RATE_LIMIT_MESSAGE, { status: 429 })
+    }
 
     if (MODE === 'sample') {
       await wait()
