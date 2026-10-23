@@ -4,7 +4,16 @@ import { WAKING_MESSAGE } from '../constants.js'
 // kinds of "empty" (no data at all vs. filters matched nothing).
 //   waking   - (loading) the server is slow; show the calm "waking up" note
 //   timedOut - (error) the server never answered within the time limit
-export default function StateMessage({ kind, detail, waking, timedOut, onRetry, onClear }) {
+//   afterReview - (empty) say that new reports appear only after a review
+export default function StateMessage({
+  kind,
+  detail,
+  waking,
+  timedOut,
+  afterReview,
+  onRetry,
+  onClear,
+}) {
   if (kind === 'loading') {
     // role="status" is a polite live region, so the waking-up note is
     // announced to screen readers when it appears.
@@ -59,8 +68,10 @@ export default function StateMessage({ kind, detail, waking, timedOut, onRetry, 
     <div className="state" role="status">
       <p className="state__title">No reports yet.</p>
       <p>
-        When community members submit observations, they will appear here. No
-        reports does not mean a pathway is safe or accessible.
+        {afterReview
+          ? 'New reports appear here after they are reviewed.'
+          : 'When community members submit observations, they will appear here.'}{' '}
+        No reports does not mean a pathway is safe or accessible.
       </p>
     </div>
   )

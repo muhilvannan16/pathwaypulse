@@ -184,23 +184,31 @@ export default function ReportFormPage() {
           tabIndex={-1}
           aria-labelledby="success-title"
         >
-          <h3 id="success-title">Your report was saved</h3>
-          <p>
-            “{created.title}” was saved with the status{' '}
-            <strong>{created.status}</strong>. That means no one has checked it yet, so
-            it is an unverified community observation.
-          </p>
-          {/* TODO (publication rules, Stage 5/6): once pending reports are hidden from
-              the public list until reviewed, change this to say it will appear after review. */}
-          <p>
-            Reports with this status are shown on the map and in the list with a “
-            {created.status}” label.
-          </p>
-          {DATA_SOURCE === 'sample' && (
-            <p>
-              <strong>Sample mode:</strong> this report is only kept in this browser tab’s
-              memory and disappears when you reload the page.
-            </p>
+          {DATA_SOURCE === 'sample' ? (
+            <>
+              <h3 id="success-title">Your report was saved</h3>
+              <p>
+                “{created.title}” was saved with the status{' '}
+                <strong>{created.status}</strong>. That means no one has checked it yet, so
+                it is an unverified community observation.
+              </p>
+              <p>
+                <strong>Sample mode:</strong> this report is only kept in this browser tab’s
+                memory and disappears when you reload the page.
+              </p>
+            </>
+          ) : (
+            <>
+              {/* NOTE: "will appear after it is reviewed" is only true while the backend's
+                  GET /reports leaves out reports that are still Pending Review. Keep the
+                  two in step (see "Known limitations" in the README). */}
+              <h3 id="success-title">Your report was received</h3>
+              <p>
+                “{created.title}” was received and is waiting for a review (status:{' '}
+                <strong>{created.status}</strong>). It will appear on the map after it is
+                reviewed.
+              </p>
+            </>
           )}
           <p>
             <OfficialReportLink />

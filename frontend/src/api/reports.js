@@ -27,7 +27,7 @@ const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replac
 const MODE = import.meta.env.VITE_DATA_SOURCE === 'sample' ? 'sample' : 'api'
 
 // 'sample' = made-up local demo data. 'api' = data from the backend server.
-// The "Sample data" / "Test server" notices on the page depend on this.
+// The "Sample data" / "Test version" notices on the page depend on this.
 export const DATA_SOURCE = MODE
 
 const FAKE_DELAY_MS = 400
@@ -153,9 +153,9 @@ async function request(path, options, signal) {
 
 // ------------------------------------------------------------ adaptation
 
-// The backend returns timestamps without a time zone for its starter reports
-// ("2026-10-10T14:30:00"). Browsers would read that as local time, so treat
-// it as UTC, which is what the server uses.
+// If the backend ever sends a timestamp without a time zone
+// ("2026-10-10T14:30:00"), browsers would read it as local time. Treat it as
+// UTC, which is what the server uses.
 function normalizeTimestamp(value) {
   if (typeof value !== 'string') return value ?? null
   return /(Z|[+-]\d\d:?\d\d)$/i.test(value) ? value : `${value}Z`

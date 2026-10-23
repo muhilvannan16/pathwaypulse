@@ -92,7 +92,7 @@ export default function ExplorePage() {
       <StateMessage kind="error" detail={load.error} timedOut={load.timedOut} onRetry={retry} />
     )
   } else if (total === 0) {
-    listContent = <StateMessage kind="empty" />
+    listContent = <StateMessage kind="empty" afterReview={!isSample} />
   } else if (visible.length === 0) {
     listContent = <StateMessage kind="no-match" onClear={() => setFilters(NO_FILTERS)} />
   } else {

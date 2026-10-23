@@ -6,7 +6,7 @@ PathwayPulse is a community-powered web app for exploring and reporting walking 
 
 > **PathwayPulse is an independent student project. It is not an official City of Rochester Hills service.** Submitting a report here does not send it to the city. For official reports, use the city's own channels.
 
-> **Current status: work in progress.** The interface runs on clearly labeled **sample data**. Every report you see in the app today is a made-up example, not a real community observation. The backend and database are not connected yet (see [Project status](#project-status)).
+> **Current status: test version, work in progress.** Reports are saved to a test database and may be cleared at any time. New reports are meant to appear on the map only after a review. Please don't include personal information. If the app is run in sample mode (see [Sample data and test views](#sample-data-and-test-views)), it shows clearly labeled made-up reports instead. See [Project status](#project-status) for what works today.
 
 ## The problem
 
@@ -27,12 +27,12 @@ Residents, students who walk or bike, people with mobility needs, and community 
 
 | Area | Status |
 | --- | --- |
-| Explore page: map, filters, counts, report list | Working, on sample data |
+| Explore page: map, filters, counts, report list | Working |
 | Accessibility basics: skip link, labeled controls, visible keyboard focus, keyboard-pannable map | Working, being refined |
 | Loading, empty, and error states | Working |
-| FastAPI backend (validation, endpoints) | Not started |
-| Report submission form with map location picker | Not started |
-| Supabase database and security policies | Not started |
+| FastAPI backend (validation, list and create reports) | Working |
+| Report submission form with map location picker | Working |
+| Supabase test database | Connected; schema and security setup in `supabase/schema.sql` |
 | Moderation and status management | Not started |
 | Deployment | Not started |
 
@@ -42,8 +42,8 @@ This table will be kept up to date as features are completed.
 
 - **Frontend:** React, Vite, JavaScript, CSS
 - **Map:** Leaflet and react-leaflet with OpenStreetMap tiles
-- **Backend (planned):** Python and FastAPI
-- **Database (planned):** Supabase PostgreSQL
+- **Backend:** Python and FastAPI
+- **Database:** Supabase PostgreSQL
 - **Hosting (planned):** Vercel for the frontend, Render for the API
 
 ## Run the frontend locally
@@ -68,7 +68,7 @@ npm run lint      # run the linter
 
 ### Sample data and test views
 
-While the backend is not connected, the app reads sample reports from `frontend/src/data/sampleReports.js`. A "Sample data" badge appears on the page, and each report is tagged as a sample. Two URL switches let you check the other states:
+By default the app loads and saves reports through the backend (`VITE_DATA_SOURCE=api`, see `frontend/.env.example`). With `VITE_DATA_SOURCE=sample` no backend is needed: the app reads made-up reports from `frontend/src/data/sampleReports.js`, a "Sample data" badge appears on the page, and each report is tagged as a sample. These URL switches work in both modes and let you check the other states:
 
 - `/?demo=error` shows the "couldn't load reports" state
 - `/?demo=empty` shows the "no reports yet" state
@@ -142,10 +142,10 @@ Render's free plan puts the API to sleep after about 15 minutes without traffic,
 
 ## Known limitations
 
-- All data currently comes from sample reports; nothing is stored.
-- Reports cannot be submitted yet.
-- There is no moderation system yet.
-- The official-reporting link in the footer points to the general city website and still needs to be replaced with the exact reporting page.
+- This is a test version: reports are saved to a test database and may be cleared at any time.
+- **The "appears after a review" promise is not enforced yet.** The site tells people new reports appear after a review, but the backend's `GET /reports` still returns every report, including ones that are Pending Review. It must return only reviewed reports before the site is shown to the public.
+- There is no moderation tool yet. Until there is one, a developer has to change a report's status by hand in the Supabase dashboard, so every new report stays Pending Review.
+- Photo uploads are not supported yet.
 
 ## Contributing and contact
 

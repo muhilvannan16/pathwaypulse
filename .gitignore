@@ -13,6 +13,8 @@ dist/
 .env
 .env.*
 !.env.example
+.claude/
+.vscode/
 
 # OS / editor
 .DS_Store

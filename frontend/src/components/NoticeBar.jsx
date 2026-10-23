@@ -14,14 +14,13 @@ export default function NoticeBar() {
             </span>
           </p>
         ) : (
-          // TODO: update this wording when reports move to the permanent
-          // database (Supabase). Today the server keeps reports in memory.
+          // Real API data. Update this wording if the project leaves the test phase.
           <p className="notice notice--sample">
-            <span className="sample-badge">Test server</span>
+            <span className="sample-badge">Test version</span>
             <span>
-              Reports come from the PathwayPulse test server. It keeps them only
-              temporarily, so they disappear when it restarts, and its starter
-              reports are made-up examples.
+              Reports are saved to a test database and may be cleared at any
+              time. New reports appear after a review. Please don’t include
+              personal information.
             </span>
           </p>
         )}

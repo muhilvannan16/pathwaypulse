@@ -3,10 +3,10 @@
 The database is Supabase (PostgreSQL). Its setup lives in
 [`supabase/schema.sql`](../supabase/schema.sql).
 
-> **Status:** this schema has been written but **not yet run against a real
-> Supabase project**, and the backend does not use it yet (it still keeps
-> reports in memory). The notes below describe the design; test it once the
-> project exists.
+> **Status:** the backend saves reports to a Supabase **test database**, and
+> the data may be cleared at any time. The notes below describe the design.
+> Before any public launch, re-check the security settings described here
+> (row-level security on, no policies) in the Supabase dashboard.
 
 ## The `reports` table
 
