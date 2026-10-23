@@ -74,6 +74,7 @@ By default the app loads and saves reports through the backend (`VITE_DATA_SOURC
 - `/?demo=empty` shows the "no reports yet" state
 - `/?demo=slow` makes requests take about 6 seconds, to show the "test server is waking up" message
 - `/?demo=timeout` shows that message, then the "server didn't respond in time" state with a Retry button
+- `/?demo=ratelimit` makes submitting a report fail like the server's "too many reports" (HTTP 429) answer
 
 ## How the code is organized
 
