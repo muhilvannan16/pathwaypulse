@@ -18,16 +18,12 @@ def get_client() -> Client:
     return _client
 
 
-def list_reports() -> list[Report]:
-    response = (
-        get_client()
-        .table("reports")
-        .select("*")
-        .order("created_at", desc=True)
-        .execute()
-    )
+def list_reports(include_pending: bool = False) -> list[Report]:
+    query = get_client().table("reports").select("*")
+    if not include_pending:
+        query = query.neq("status", "Pending Review")
+    response = query.order("created_at", desc=True).execute()
     return [Report(**row) for row in response.data]
-
 
 def insert_report(data: ReportCreate) -> Report:
     response = get_client().table("reports").insert(data.model_dump()).execute()
