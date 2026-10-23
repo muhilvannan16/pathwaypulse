@@ -22,7 +22,8 @@ variables (copy `.env.example` to `.env.local` to change them):
 For `api` mode, start the backend first (see `backend/`). With
 `VITE_DATA_SOURCE=sample` no backend is needed.
 
-Developer test hooks (both modes): add `?demo=error` or `?demo=empty` to the
-URL to see the error and empty states.
+Developer test hooks (both modes): add `?demo=error`, `?demo=empty`, `?demo=slow`,
+`?demo=timeout` or `?demo=ratelimit` to the URL to see the error, empty,
+waking-up, timeout and "too many reports" states.
 
-The full project README (setup, Supabase, deployment) comes in a later stage.
+See the [main README](../README.md) for full setup, Supabase and deployment.

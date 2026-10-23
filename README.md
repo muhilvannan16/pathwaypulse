@@ -2,11 +2,17 @@
 
 **Better paths. Stronger communities.**
 
-PathwayPulse is a community-powered web app for exploring and reporting walking and biking pathway barriers in Rochester Hills, Michigan. It is being built for the Congressional App Challenge 2026.
+PathwayPulse is a community-powered web app for exploring and reporting walking and biking pathway barriers in Rochester Hills, Michigan. It was built for the Congressional App Challenge 2026.
 
-> **PathwayPulse is an independent student project. It is not an official City of Rochester Hills service.** Submitting a report here does not send it to the city. For official reports, use the city's own channels.
+> **PathwayPulse is an independent student project. It is not an official City of Rochester Hills service.** Submitting a report here does **not** send it to the city. To make an official report, use the city's own [Report a Concern](https://rochesterhills.maps.arcgis.com/apps/instant/reporter/index.html?appid=fa2a4da97b254606a231c14d7647b79b) page.
 
-> **Current status: test version, work in progress.** Reports are saved to a test database and may be cleared at any time. New reports are meant to appear on the map only after a review. Please don't include personal information. If the app is run in sample mode (see [Sample data and test views](#sample-data-and-test-views)), it shows clearly labeled made-up reports instead. See [Project status](#project-status) for what works today.
+## Try it
+
+- **Live app:** <https://pathwaypulse-eight.vercel.app>
+- This is a **test version**. Reports are saved to a test database and may be cleared at any time. Please don't include personal information.
+- The server runs on a free hosting plan and goes to sleep when idle. The first request after a quiet period can take up to about a minute. The app tells you when this is happening.
+
+<!-- SCREENSHOT: add docs/screenshots/explore.png and docs/screenshots/report-form.png, then show them here with ![Explore page](docs/screenshots/explore.png) -->
 
 ## The problem
 
@@ -19,56 +25,109 @@ Rochester Hills already has a pathway network and public pathway information. Pa
 
 These are problems to investigate, not claims about how common they are. PathwayPulse is meant to complement official resources, not replace them. It never labels a pathway "safe" or "accessible": a map with no reports on a route does not mean the route has no barriers.
 
-## Who it is for
+**Who it is for:** residents, students who walk or bike, people with mobility needs, and community members or organizers who want to understand recurring concerns.
 
-Residents, students who walk or bike, people with mobility needs, and community members or organizers who want to understand recurring concerns.
+## What it does
+
+- **Explore** community reports on an interactive map, with a list of recent reports, counts, and filters by issue category and review status.
+- **Report a barrier** with a title, category, description, and a location picked on the map. No name, email, or phone number is asked for.
+- **Review before publishing:** every new report starts as *Pending Review* and stays hidden from the public list until a moderator verifies it.
+- **Clear states** for loading, empty results, errors, a sleeping server, and slow or timed-out requests.
+
+## How it works
+
+```
+Browser (React app on Vercel)
+        |  HTTPS
+        v
+FastAPI server (Render)  -->  Supabase PostgreSQL
+```
+
+1. A visitor submits a report in the browser.
+2. The FastAPI server checks it (see "Protections" below) and saves it as **Pending Review**.
+3. A moderator changes its status to **Verified** in the Supabase dashboard. There is no moderator app yet.
+4. Only then does it appear on the public map and list.
+
+The browser never talks to the database directly. The database's public access is switched off, and only the server, using a secret key kept in environment variables, can read and write reports.
+
+### Protections
+
+- **Server-side validation:** length limits, an allowed category list, and coordinates that must fall inside the Rochester Hills area. Unknown fields are rejected, and a visitor cannot choose a report's status or id.
+- **Database rules as a second lock:** the same limits are enforced by CHECK constraints, and Row Level Security is on with no public policies.
+- **CORS** is limited to the real frontend address.
+- **Rate limit:** at most 5 submissions per hour from one client address. It is kept in the server's memory, so it resets whenever the server restarts. It stops casual spam, not a determined attacker.
+- **Duplicate guard:** if an identical title and location was saved in the last 10 minutes, the server returns that report instead of saving another one. This protects against retries after a timeout.
+- **Safe text:** reports are displayed as plain text, never as HTML.
 
 ## Project status
 
 | Area | Status |
 | --- | --- |
 | Explore page: map, filters, counts, report list | Working |
-| Accessibility basics: skip link, labeled controls, visible keyboard focus, keyboard-pannable map | Working, being refined |
-| Loading, empty, and error states | Working |
+| Report form with map location picker | Working |
 | FastAPI backend (validation, list and create reports) | Working |
-| Report submission form with map location picker | Working |
-| Supabase test database | Connected; schema and security setup in `supabase/schema.sql` |
-| Moderation and status management | Not started |
-| Deployment | Not started |
-
-This table will be kept up to date as features are completed.
+| Supabase database with security setup | Working (`supabase/schema.sql`) |
+| Deployment (Vercel, Render, Supabase) | Live test deployment |
+| Reports hidden until reviewed | Working |
+| Rate limiting and duplicate guard | Working (basic, in memory) |
+| Moderation and status changes | Manual, in the Supabase dashboard |
+| Accessibility basics: skip link, labeled controls, visible keyboard focus, keyboard-pannable map | Working, being refined |
+| Photo uploads | Not built |
+| Reporting inappropriate content | Not built |
 
 ## Tech stack
 
 - **Frontend:** React, Vite, JavaScript, CSS
 - **Map:** Leaflet and react-leaflet with OpenStreetMap tiles
-- **Backend:** Python and FastAPI
+- **Backend:** Python 3.13 and FastAPI
 - **Database:** Supabase PostgreSQL
-- **Hosting (planned):** Vercel for the frontend, Render for the API
+- **Hosting:** Vercel (frontend), Render (API), Supabase (database)
 
-## Run the frontend locally
+## Run it locally
 
-You need Node.js 18 or newer.
+You need Node.js (a current LTS release; developed on Node 24) and Python 3.13.
+
+### Frontend only, with sample data (no backend needed)
 
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local     # Windows PowerShell: Copy-Item .env.example .env.local
+# edit .env.local and set VITE_DATA_SOURCE=sample
 npm run dev
 ```
 
-Then open the address Vite prints, usually <http://localhost:5173>.
+Open the address Vite prints, usually <http://localhost:5173>. A "Sample data" badge appears and every report is labeled as a made-up sample. Sample data is never presented as real community data.
 
-Other commands:
+### Full app (frontend + backend + your own Supabase project)
 
-```bash
-npm run build     # production build, output in frontend/dist
-npm run preview   # serve the production build locally
-npm run lint      # run the linter
-```
+1. **Database.** Create a free project at [supabase.com](https://supabase.com). In the dashboard open *SQL Editor*, paste the contents of `supabase/schema.sql`, and run it. See [docs/database.md](docs/database.md) for what it sets up.
+2. **Backend.** From the repo root:
 
-### Sample data and test views
+   ```bash
+   cd backend
+   python -m venv .venv
+   # Windows PowerShell:  .venv\Scripts\Activate.ps1
+   # macOS / Linux:       source .venv/bin/activate
+   pip install -r requirements.txt
+   cp .env.example .env      # Windows PowerShell: Copy-Item .env.example .env
+   ```
 
-By default the app loads and saves reports through the backend (`VITE_DATA_SOURCE=api`, see `frontend/.env.example`). With `VITE_DATA_SOURCE=sample` no backend is needed: the app reads made-up reports from `frontend/src/data/sampleReports.js`, a "Sample data" badge appears on the page, and each report is tagged as a sample. These URL switches work in both modes and let you check the other states:
+   Edit `backend/.env` and fill in `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` (the project's secret/service-role key, from *Project Settings, API*). **Never commit this file or share the key.** Then start the server:
+
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+   The API runs at <http://127.0.0.1:8000>, and interactive API docs are at <http://127.0.0.1:8000/docs>.
+3. **Frontend.** In a second terminal, run `npm install` and `npm run dev` in `frontend/`. With `VITE_DATA_SOURCE=api` (the default) it talks to the backend at `http://localhost:8000`.
+4. **Approve a report.** New reports are *Pending Review* and hidden. In Supabase, open *Table Editor*, `reports`, and change a row's `status` to `Verified`. It then appears in the app.
+
+Other frontend commands: `npm run build` (production build), `npm run preview`, `npm run lint`.
+
+## Sample data and test views
+
+With `VITE_DATA_SOURCE=sample` the app reads made-up reports from `frontend/src/data/sampleReports.js`. These URL switches work in both modes and show the other states:
 
 - `/?demo=error` shows the "couldn't load reports" state
 - `/?demo=empty` shows the "no reports yet" state
@@ -79,50 +138,52 @@ By default the app loads and saves reports through the backend (`VITE_DATA_SOURC
 ## How the code is organized
 
 ```
-backend/    Python / FastAPI API (in progress)
+backend/    Python / FastAPI API
+  app/main.py        routes, CORS, rate-limit and duplicate checks
+  app/models.py      the rules a report must follow (Pydantic)
+  app/db.py          all Supabase reads and writes
+  app/ratelimit.py   the in-memory rate limiter
 frontend/   React + Vite app
   src/api/reports.js      the only file that fetches data
   src/components/         header, map, filters, report cards, counts, notices
-  src/pages/              the Explore page
+  src/pages/              Explore page and Report form page
   src/data/               sample reports
   src/constants.js        categories and statuses shared with the backend
-docs/       project documents
-CLAUDE.md   project spec and working notes
+supabase/   schema.sql, the database setup
+docs/       database notes, deployment notes, official reporting links
 ```
-
-All data access goes through `frontend/src/api/reports.js`. When the backend is ready, only that file needs to change.
 
 ### Data model
 
-Each report has: `id`, `title`, `description`, `category`, `latitude`, `longitude`, `status`, `created_at`, `photo_path` (optional), and `reviewed_at` (optional).
+Each report has: `id`, `title`, `description`, `category`, `latitude`, `longitude`, `status`, `created_at`, `photo_path` (optional, unused), and `reviewed_at` (optional).
 
 - **Categories:** `damaged_path`, `blocked_path`, `accessibility_barrier`, `missing_connection`
 - **Statuses:** Pending Review, Verified, Submitted to Agency, Resolved
 
-Planned rules: new public reports always start as Pending Review. Only authorized moderators can change a status. "Submitted to Agency" will be used only after a report was actually submitted, and "Resolved" only with credible evidence.
+New public reports always start as Pending Review, and only someone with database access can change a status. "Submitted to Agency" is meant to be used only after a report was actually submitted, and "Resolved" only with credible evidence.
 
 ## Deploying
 
-The planned setup is **Vercel** (frontend), **Render** (Python API), and **Supabase** (database). Set the variables below in each host's dashboard. **Never commit real values**; the placeholders here are examples only. See [docs/deployment-requirements.md](docs/deployment-requirements.md) for the full requirements.
+PathwayPulse is deployed with **Vercel** (frontend), **Render** (Python API), and **Supabase** (database). Set the variables below in each host's dashboard. **Never commit real values.** More detail is in [docs/deployment-requirements.md](docs/deployment-requirements.md).
 
 ### Render (backend API)
 
 | Variable | What to put there | Notes |
 | --- | --- | --- |
 | `SUPABASE_URL` | Your Supabase project URL | Supabase dashboard, Project Settings, API |
-| `SUPABASE_SERVICE_KEY` | Your Supabase **service_role** key | **Secret.** Full database access. Server only; never in the frontend |
-| `ALLOWED_ORIGINS` | The frontend's web address, e.g. `https://YOUR-APP.vercel.app` | Several addresses separated by commas, **no spaces and no trailing slash** |
-| `PYTHON_VERSION` | The Python version Render should use | Match the one you develop with (3.13); check Render's docs for the accepted format |
+| `SUPABASE_SERVICE_KEY` | Your Supabase **secret / service_role** key | **Secret.** Full database access. Server only; never in the frontend |
+| `ALLOWED_ORIGINS` | The frontend's address, e.g. `https://YOUR-APP.vercel.app` | Several addresses separated by commas, **no spaces and no trailing slash** |
+| `PYTHON_VERSION` | A full Python version, e.g. `3.13.14` | Render needs the full version number |
 
-Typical service settings (confirm against Render's current docs): root directory `backend`, build command `pip install -r requirements.txt`, start command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+Service settings: root directory `backend`, build command `pip install -r requirements.txt`, start command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, health check path `/health`.
 
 ### Vercel (frontend)
 
 | Variable | What to put there | Notes |
 | --- | --- | --- |
-| `VITE_API_URL` | The public address of the Render service, e.g. `https://YOUR-API.onrender.com` | **Public**: it is baked into the site at build time, so redeploy after changing it |
+| `VITE_API_URL` | The public address of the Render service | **Public**: it is baked into the site at build time, so redeploy after changing it |
 
-Typical project settings: root directory `frontend`, build command `npm run build`, output directory `dist`. Leave `VITE_DATA_SOURCE` unset so the app uses the real API (it defaults to `api`). The site uses `#/` links for its two pages, so no rewrite rules are needed.
+Project settings: root directory `frontend`, build command `npm run build`, output directory `dist`. Leave `VITE_DATA_SOURCE` unset so the app uses the real API.
 
 ### Order of setup
 
@@ -132,26 +193,35 @@ Typical project settings: root directory `frontend`, build command `npm run buil
 
 ### Free-tier "waking up" delay
 
-Render's free plan puts the API to sleep after about 15 minutes without traffic, and the first request afterwards can take around a minute. The app handles this: after about 4 seconds it shows "The test server is waking up. This can take up to a minute." and keeps waiting, then stops after about 75 seconds with a Retry button. If submitting a report times out, the form says it cannot tell whether the report was saved and asks people to check the list before sending it again.
+Render's free plan puts the API to sleep after about 15 minutes without traffic, and the first request afterwards can take around a minute. The app handles this: after about 4 seconds it shows "The test server is waking up. This can take up to a minute." and keeps waiting, then stops after about 75 seconds with a Retry button. If submitting a report times out, the form says it cannot tell whether the report was saved and asks people to check before sending it again.
 
 ## Privacy and accuracy
 
-- Contributors will not be asked for a name, email, or phone number.
-- Photos and descriptions should not include faces, license plates, home addresses, or other personal information.
+- Contributors are not asked for a name, email, or phone number, and the database has no column for them.
+- Descriptions should not include faces, license plates, home addresses, or other personal information.
 - Community observations are unverified unless their status says otherwise.
+- Like any web host, the hosting services may keep ordinary server logs that include visitors' network addresses.
 - Map data is from [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
 
 ## Known limitations
 
 - This is a test version: reports are saved to a test database and may be cleared at any time.
-- **The "appears after a review" promise is not enforced yet.** The site tells people new reports appear after a review, but the backend's `GET /reports` still returns every report, including ones that are Pending Review. It must return only reviewed reports before the site is shown to the public.
-- There is no moderation tool yet. Until there is one, a developer has to change a report's status by hand in the Supabase dashboard, so every new report stays Pending Review.
-- Photo uploads are not supported yet.
+- Moderation is manual. A developer changes a report's status by hand in the Supabase dashboard. There is no moderator app and no "report inappropriate content" button yet.
+- The rate limiter lives in the server's memory and resets when the server restarts. The duplicate guard only catches identical reports, and two simultaneous requests could still both be saved.
+- The server's free hosting plan sleeps when idle, so the first visit can be slow.
+- Photo uploads are not supported.
+- There is no automated test suite. The app was checked by hand, including a small test with volunteers.
+
+## How this was built
+
+<!-- TODO (Muhil): describe who wrote what and how AI assistance was used, in your own words. Be specific and truthful about each person's contribution. -->
 
 ## Contributing and contact
 
-This is a student project built by two developers. Ideas and bug reports are welcome through GitHub Issues.
+This is a student project. Ideas and bug reports are welcome through GitHub Issues.
 
 ## License
 
 No license has been chosen yet. Until one is added, all rights are reserved by the authors.
+
+<!-- TODO: add an open-source license (for example MIT) only after both authors agree. -->
