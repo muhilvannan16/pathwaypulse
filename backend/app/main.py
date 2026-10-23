@@ -61,6 +61,9 @@ def create_report(data: ReportCreate, request: Request):
         )
 
     try:
+        existing = db.find_recent_duplicate(data)
+        if existing:
+            return existing
         return db.insert_report(data)
     except Exception:
         logger.exception("Could not save report")
