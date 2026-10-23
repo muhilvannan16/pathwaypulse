@@ -5,6 +5,7 @@ import ReportList from '../components/ReportList.jsx'
 import ReportMap from '../components/ReportMap.jsx'
 import StatCards from '../components/StatCards.jsx'
 import StateMessage from '../components/StateMessage.jsx'
+import { PUBLIC_STATUSES, STATUSES } from '../constants.js'
 import { isNarrowLayout } from '../utils.js'
 
 const NO_FILTERS = { category: '', status: '' }
@@ -56,9 +57,20 @@ export default function ExplorePage() {
   const isSample = DATA_SOURCE === 'sample'
 
   // Counts come from everything that was loaded, not from the filtered view.
+  const countStatus = (status) => reports.filter((r) => r.status === status).length
+
+  // The real (api) data never includes "Pending Review" reports, so a
+  // "Pending review" card would always say 0. Show "Verified" instead there.
+  // Sample data does include pending reports, so it keeps the old card.
+  const statCards = [
+    { label: 'Total reports', value: reports.length },
+    isSample
+      ? { label: 'Pending review', value: countStatus('Pending Review') }
+      : { label: 'Verified', value: countStatus('Verified') },
+    { label: 'Resolved', value: countStatus('Resolved') },
+  ]
+  const filterStatuses = isSample ? STATUSES : PUBLIC_STATUSES
   const total = reports.length
-  const pending = reports.filter((r) => r.status === 'Pending Review').length
-  const resolved = reports.filter((r) => r.status === 'Resolved').length
 
   const visible = reports
     .filter((r) => !filters.category || r.category === filters.category)
@@ -111,13 +123,9 @@ export default function ExplorePage() {
       <h2 id="page-heading" className="page-title" tabIndex={-1}>
         Explore reports
       </h2>
-      <StatCards
-        total={total}
-        pending={pending}
-        resolved={resolved}
-        loading={phase === 'loading'}
-      />
+      <StatCards cards={statCards} loading={phase === 'loading'} />
       <FilterBar
+        statuses={filterStatuses}
         filters={filters}
         onChange={setFilters}
         onClear={() => setFilters(NO_FILTERS)}

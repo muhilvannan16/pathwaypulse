@@ -1,6 +1,7 @@
-// Shows the three headline counts. The numbers are passed in by the page and
-// are calculated from the reports that were actually loaded.
-export default function StatCards({ total, pending, resolved, loading }) {
+// Shows the headline counts. The page decides WHICH counts to show and passes
+// them in as `cards` ([{ label, value }]); the numbers are calculated from the
+// reports that were actually loaded.
+export default function StatCards({ cards, loading }) {
   const show = (n) => (loading ? '–' : n)
   return (
     <section className="stats" aria-labelledby="stats-heading">
@@ -8,18 +9,12 @@ export default function StatCards({ total, pending, resolved, loading }) {
         Report counts
       </h2>
       <dl className="stats__grid" aria-busy={loading}>
-        <div className="stat-card">
-          <dt>Total reports</dt>
-          <dd>{show(total)}</dd>
-        </div>
-        <div className="stat-card">
-          <dt>Pending review</dt>
-          <dd>{show(pending)}</dd>
-        </div>
-        <div className="stat-card">
-          <dt>Resolved</dt>
-          <dd>{show(resolved)}</dd>
-        </div>
+        {cards.map((card) => (
+          <div className="stat-card" key={card.label}>
+            <dt>{card.label}</dt>
+            <dd>{show(card.value)}</dd>
+          </div>
+        ))}
       </dl>
     </section>
   )

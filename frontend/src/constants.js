@@ -22,6 +22,11 @@ export const STATUSES = [
   'Resolved',
 ]
 
+// Statuses the PUBLIC api can return. The backend hides "Pending Review"
+// reports until a moderator verifies them, so the real (api) data never
+// contains that status. Sample data still uses it.
+export const PUBLIC_STATUSES = STATUSES.filter((status) => status !== 'Pending Review')
+
 // The status values are already human-readable, but we keep a label map so
 // the display text can change later without changing the stored value.
 export const STATUS_LABELS = {

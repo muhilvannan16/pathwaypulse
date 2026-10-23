@@ -2,8 +2,11 @@
 
 import os
 import logging
+import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+
+from app.ratelimit import is_allowed
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import db
@@ -19,6 +22,13 @@ ALLOWED_ORIGINS = [
     for origin in os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
     if origin.strip()
 ]
+
+def get_client_id(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,9 +53,21 @@ def list_reports():
 
 
 @app.post("/reports", response_model=Report, status_code=201)
-def create_report(data: ReportCreate):
+def create_report(data: ReportCreate, request: Request):
+    client_id = get_client_id(request)
+    logger.info("Report submission from client %s", client_id)  # <- TEMPORARY, remove before commit
+
+    if not is_allowed(client_id, time.time()):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many reports from this connection. Please try again later.",
+        )
+
     try:
         return db.insert_report(data)
     except Exception:
         logger.exception("Could not save report")
-        raise HTTPException(status_code=503, detail="Your report could not be saved right now. Please try again.")
+        raise HTTPException(
+            status_code=503,
+            detail="Your report could not be saved right now. Please try again.",
+        )

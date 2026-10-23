@@ -1,6 +1,8 @@
 import { CATEGORIES, CATEGORY_LABELS, STATUSES, STATUS_LABELS } from '../constants.js'
 
-export default function FilterBar({ filters, onChange, onClear, disabled }) {
+// `statuses` is the list offered in the "Review status" dropdown. The page
+// passes only the statuses that can actually appear in the loaded data.
+export default function FilterBar({ filters, onChange, onClear, disabled, statuses = STATUSES }) {
   const hasFilters = filters.category !== '' || filters.status !== ''
   return (
     <form
@@ -33,7 +35,7 @@ export default function FilterBar({ filters, onChange, onClear, disabled }) {
           onChange={(event) => onChange({ ...filters, status: event.target.value })}
         >
           <option value="">All statuses</option>
-          {STATUSES.map((value) => (
+          {statuses.map((value) => (
             <option key={value} value={value}>
               {STATUS_LABELS[value]}
             </option>
