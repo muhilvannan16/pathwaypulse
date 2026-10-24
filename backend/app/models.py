@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Literal, Self
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-Category = Literal["damaged_path", "blocked_path", "accessibility_barrier", "missing_connection"]
+Category = Literal["damaged_path", "blocked_path", "accessibility_barrier", "missing_connection", "other"]
 
 Status = Literal["Pending Review", "Verified", "Submitted to Agency", "Resolved"]
 
