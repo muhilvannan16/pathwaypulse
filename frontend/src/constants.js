@@ -6,6 +6,7 @@ export const CATEGORIES = [
   'blocked_path',
   'accessibility_barrier',
   'missing_connection',
+  'other',
 ]
 
 export const CATEGORY_LABELS = {
@@ -13,6 +14,7 @@ export const CATEGORY_LABELS = {
   blocked_path: 'Blocked pathway',
   accessibility_barrier: 'Accessibility barrier',
   missing_connection: 'Missing pathway or sidewalk connection',
+  other: 'Other (please describe below)',
 }
 
 export const STATUSES = [

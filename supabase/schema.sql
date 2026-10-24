@@ -31,7 +31,8 @@ create table if not exists public.reports (
                     'damaged_path',
                     'blocked_path',
                     'accessibility_barrier',
-                    'missing_connection'
+                    'missing_connection',
+                    'other'
                 )),
 
     -- Only the valid range of the globe is checked here. The "must be inside

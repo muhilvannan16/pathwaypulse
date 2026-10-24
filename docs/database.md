@@ -18,7 +18,7 @@ the backend and the frontend.
 | `id` | Unique number | Assigned automatically; nobody can choose it |
 | `title` | Short summary | 5–100 characters (spaces at the ends don't count) |
 | `description` | Details | 10–1000 characters |
-| `category` | Type of problem | One of `damaged_path`, `blocked_path`, `accessibility_barrier`, `missing_connection` |
+| `category` | Type of problem | One of `damaged_path`, `blocked_path`, `accessibility_barrier`, `missing_connection`, `other` |
 | `latitude`, `longitude` | Where it is | Latitude −90 to 90, longitude −180 to 180 |
 | `status` | Review stage | One of `Pending Review`, `Verified`, `Submitted to Agency`, `Resolved`; starts as `Pending Review` |
 | `created_at` | When it was saved | Filled in automatically |
