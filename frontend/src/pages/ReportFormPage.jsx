@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ApiError, DATA_SOURCE, createReport } from '../api/reports.js'
+import { addMyReport } from '../myReports.js'
 import LocationPicker from '../components/LocationPicker.jsx'
 import {
   CATEGORIES,
@@ -141,6 +142,7 @@ export default function ReportFormPage() {
       const report = await createReport(values, { onSlow: () => setWaking(true) })
       // Only now, after the save really succeeded, do we show the confirmation.
       setCreated(report)
+      if (DATA_SOURCE === 'api') addMyReport(report)
       setValues(EMPTY_VALUES)
       setPhase('success')
     } catch (error) {
@@ -231,7 +233,8 @@ export default function ReportFormPage() {
               </ol>
               <p>
                 PathwayPulse doesn’t collect contact details, so you won’t get a message when
-                it is reviewed. Check the map again later.
+                it is reviewed. You can follow it under <strong>My reports</strong> on the
+                Explore page. That list is saved only on this device.
               </p>
             </>
           )}

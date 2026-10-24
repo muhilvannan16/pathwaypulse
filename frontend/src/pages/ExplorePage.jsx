@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { DATA_SOURCE, getReports } from '../api/reports.js'
 import FilterBar from '../components/FilterBar.jsx'
+import MyReports from '../components/MyReports.jsx'
 import ReportList from '../components/ReportList.jsx'
 import ReportMap from '../components/ReportMap.jsx'
 import StatCards from '../components/StatCards.jsx'
 import StateMessage from '../components/StateMessage.jsx'
 import { PUBLIC_STATUSES, STATUSES } from '../constants.js'
+import { getMyReports, removeMyReport } from '../myReports.js'
 import { isNarrowLayout } from '../utils.js'
 
 const NO_FILTERS = { category: '', status: '' }
@@ -25,6 +27,7 @@ export default function ExplorePage() {
   const [attempt, setAttempt] = useState(0) // bump to reload
   const [filters, setFilters] = useState(NO_FILTERS)
   const [selectedId, setSelectedId] = useState(null)
+  const [mine, setMine] = useState(getMyReports) // reports sent from this device
   const mapSectionRef = useRef(null)
 
   useEffect(() => {
@@ -96,6 +99,17 @@ export default function ExplorePage() {
     }
   }
 
+  function showMine(id) {
+    // Clear the filters first so the report can't be hidden by one.
+    setFilters(NO_FILTERS)
+    selectFromList(id)
+  }
+
+  function removeMine(id) {
+    removeMyReport(id)
+    setMine(getMyReports())
+  }
+
   let listContent
   if (phase === 'loading') {
     listContent = <StateMessage kind="loading" waking={load.waking} />
@@ -123,6 +137,15 @@ export default function ExplorePage() {
       <h2 id="page-heading" className="page-title" tabIndex={-1}>
         Explore reports
       </h2>
+      {!isSample && (
+        <MyReports
+          mine={mine}
+          publicReports={reports}
+          statusKnown={phase === 'ready'}
+          onShow={showMine}
+          onRemove={removeMine}
+        />
+      )}
       <StatCards cards={statCards} loading={phase === 'loading'} />
       <FilterBar
         statuses={filterStatuses}

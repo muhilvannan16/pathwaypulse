@@ -31,6 +31,7 @@ These are problems to investigate, not claims about how common they are. Pathway
 
 - **Explore** community reports on an interactive map, with a list of recent reports, counts, and filters by issue category and review status.
 - **Report a barrier** with a title, category, description, and a location picked on the map. No name, email, or phone number is asked for.
+- **My reports:** reports you submit are remembered on your own device, so you can see whether yours is still waiting, or has been verified, without anyone else seeing it.
 - **Review before publishing:** every new report starts as *Pending Review* and stays hidden from the public list until a moderator verifies it.
 - **Clear states** for loading, empty results, errors, a sleeping server, and slow or timed-out requests.
 
@@ -198,6 +199,7 @@ Render's free plan puts the API to sleep after about 15 minutes without traffic,
 ## Privacy and accuracy
 
 - Contributors are not asked for a name, email, or phone number, and the database has no column for them.
+- To power the "My reports" list, your browser remembers the id, title, category and date of reports you submit. This stays on your device only (browser storage), is never sent anywhere, and can be removed with the Remove button.
 - Descriptions should not include faces, license plates, home addresses, or other personal information.
 - Community observations are unverified unless their status says otherwise.
 - Like any web host, the hosting services may keep ordinary server logs that include visitors' network addresses.

@@ -752,3 +752,52 @@ main:focus {
     transition: none;
   }
 }
+
+/* ---------- My reports (reports sent from this device) ---------- */
+.my-reports {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.my-reports__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.my-reports__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.my-reports__info {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  justify-items: start;
+}
+.my-reports__title {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.my-reports__meta {
+  color: var(--navy-soft);
+  font-size: 0.875rem;
+}
+.my-reports__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.btn--small {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
