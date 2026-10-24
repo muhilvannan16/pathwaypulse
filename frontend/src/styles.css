@@ -646,6 +646,16 @@ main:focus {
   margin: 0;
   font-size: 1.2rem;
 }
+.success-panel__subtitle {
+  margin: 4px 0 0;
+  font-size: 1rem;
+}
+.next-steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 6px;
+}
 
 /* ---------- Location picker ---------- */
 .location {

@@ -210,9 +210,28 @@ export default function ReportFormPage() {
                   two in step (see "Known limitations" in the README). */}
               <h3 id="success-title">Your report was received</h3>
               <p>
-                “{created.title}” was received and is waiting for a review (status:{' '}
-                <strong>{created.status}</strong>). It will appear on the map after it is
-                reviewed.
+                “{created.title}” was received and saved with the status{' '}
+                <strong>{created.status}</strong>. It is <strong>not public yet</strong>, so
+                you won’t see it on the map or in the list right now. That is expected.
+              </p>
+              <h4 className="success-panel__subtitle">What happens next</h4>
+              <ol className="next-steps">
+                <li>
+                  A person on the project team reads each new report. This is done by hand,
+                  so it may take a while.
+                </li>
+                <li>
+                  They check that it is clear and does not contain personal information.
+                  Reports that are unclear, repeated, or inappropriate may not be published.
+                </li>
+                <li>
+                  If it passes, its status changes to <strong>Verified</strong> and it
+                  appears on the map and in the list.
+                </li>
+              </ol>
+              <p>
+                PathwayPulse doesn’t collect contact details, so you won’t get a message when
+                it is reviewed. Check the map again later.
               </p>
             </>
           )}
@@ -245,7 +264,8 @@ export default function ReportFormPage() {
       <p className="page-intro">
         Describe a walking or biking pathway problem you have seen in Rochester Hills. You
         don’t need to give your name, email, or phone number. Reports are community
-        observations and stay unverified until reviewed.
+        observations and stay unverified until reviewed. A person checks each new report
+        before it appears on the public map, so yours will not show up right away.
       </p>
 
       <form className="form-card" onSubmit={handleSubmit} noValidate>

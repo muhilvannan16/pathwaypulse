@@ -19,7 +19,7 @@ export default function NoticeBar() {
             <span className="sample-badge">Test version</span>
             <span>
               Reports are saved to a test database and may be cleared at any
-              time. New reports appear after a review. Please don’t include
+              time. New reports are checked by a person before they appear. Please don’t include
               personal information.
             </span>
           </p>

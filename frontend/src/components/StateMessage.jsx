@@ -69,7 +69,7 @@ export default function StateMessage({
       <p className="state__title">No reports yet.</p>
       <p>
         {afterReview
-          ? 'New reports appear here after they are reviewed.'
+          ? 'New reports are checked by a person before they appear here, so a report you just sent will not show up right away.'
           : 'When community members submit observations, they will appear here.'}{' '}
         No reports does not mean a pathway is safe or accessible.
       </p>
