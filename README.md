@@ -222,6 +222,4 @@ This is a student project. Ideas and bug reports are welcome through GitHub Issu
 
 ## License
 
-No license has been chosen yet. Until one is added, all rights are reserved by the authors.
-
-<!-- TODO: add an open-source license (for example MIT) only after both authors agree. -->
+This project is open source under the [MIT License](LICENSE). The "PathwayPulse" name and the City of Rochester Hills' official services are not covered by it, and PathwayPulse is not affiliated with the city.
