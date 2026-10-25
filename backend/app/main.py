@@ -4,7 +4,8 @@ import os
 import logging
 import time
 
-from fastapi import FastAPI, HTTPException, Request
+import secrets
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 
 from app.ratelimit import is_allowed
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,16 +24,64 @@ ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+MODERATOR_TOKEN = os.environ.get("MODERATOR_TOKEN", "")
+
+
+def require_moderator(x_moderator_token: str | None = Header(default=None)) -> None:
+    # Fail closed: if no token is configured, or none was sent, refuse.
+    if not MODERATOR_TOKEN or not x_moderator_token:
+        raise HTTPException(status_code=401, detail="Moderator access required.")
+    # Compare as bytes: compare_digest raises an error on non-ASCII text.
+    if not secrets.compare_digest(x_moderator_token.encode(), MODERATOR_TOKEN.encode()):
+        raise HTTPException(status_code=401, detail="Moderator access required.")
+
+
 def get_client_id(request: Request) -> str:
     # uvicorn already replaced the proxy's address with the real client's
     return request.client.host if request.client else "unknown"
 
 
+@app.get("/moderation/reports", response_model=list[Report], dependencies=[Depends(require_moderator)])
+def moderation_list():
+    try:
+        return db.list_pending()
+    except Exception:
+        logger.exception("Could not load moderation queue")
+        raise HTTPException(status_code=503, detail="The moderation queue is not available right now.")
+
+
+@app.post("/moderation/reports/{report_id}/verify", response_model=Report, dependencies=[Depends(require_moderator)])
+def moderation_verify(report_id: int):
+    try:
+        report = db.verify_report(report_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail="Report not found.")
+        return report
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Could not verify report %s", report_id)
+        raise HTTPException(status_code=503, detail="The report could not be verified right now.")
+
+
+@app.delete("/moderation/reports/{report_id}", status_code=204, dependencies=[Depends(require_moderator)])
+def moderation_reject(report_id: int):
+    try:
+        was_deleted = db.reject_report(report_id)
+        if not was_deleted:
+            raise HTTPException(status_code=404, detail="Report not found.")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Could not reject report %s", report_id)
+        raise HTTPException(status_code=503, detail="The report could not be rejected right now.")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_methods=["GET", "POST"],                 
-    allow_headers=["Content-Type"],
+    allow_methods=["GET", "POST", "DELETE"],
+    allow_headers=["Content-Type", "X-Moderator-Token"],
 )
 
 
