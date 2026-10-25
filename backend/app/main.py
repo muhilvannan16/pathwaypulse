@@ -11,7 +11,8 @@ from app.ratelimit import is_allowed
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import db
-from app.models import Report, ReportCreate
+from app.models import ModerationItem, Report, ReportCreate
+from app.screening import screen_report
 
 logger = logging.getLogger("pathwaypulse")
 
@@ -41,10 +42,14 @@ def get_client_id(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-@app.get("/moderation/reports", response_model=list[Report], dependencies=[Depends(require_moderator)])
+@app.get("/moderation/reports", response_model=list[ModerationItem], dependencies=[Depends(require_moderator)])
 def moderation_list():
     try:
-        return db.list_pending()
+        reports = db.list_pending()
+        return [
+            ModerationItem(**report.model_dump(), flags=screen_report(report.title, report.description))
+            for report in reports
+        ]
     except Exception:
         logger.exception("Could not load moderation queue")
         raise HTTPException(status_code=503, detail="The moderation queue is not available right now.")

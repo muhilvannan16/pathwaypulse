@@ -42,3 +42,7 @@ class Report(ReportCreate):
     created_at: datetime
     photo_path: str | None = None
     reviewed_at: datetime | None = None
+
+class ModerationItem(Report):
+    # A pending report plus the automatic warnings for a person to look at.
+    flags: list[str] = []
