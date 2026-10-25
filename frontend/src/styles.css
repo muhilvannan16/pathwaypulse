@@ -867,3 +867,12 @@ main:focus {
 .btn--danger:hover:not(:disabled) {
   background: #fdecea;
 }
+
+.mod-item__flags {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid #9a5b00;
+  background: #fff4e0;
+  color: #4a2c00;
+  font-size: 0.95rem;
+}

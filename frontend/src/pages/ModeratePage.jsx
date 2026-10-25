@@ -170,6 +170,11 @@ export default function ModeratePage() {
                   </a>
                 </p>
                 <p className="mod-item__desc">{report.description}</p>
+                {report.flags?.length > 0 && (
+                  <p className="mod-item__flags">
+                    <strong>Check carefully:</strong> {report.flags.join('; ')}.
+                  </p>
+                )}
                 <div className="mod-item__actions">
                   <button
                     type="button"
