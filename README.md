@@ -12,7 +12,13 @@ PathwayPulse is a community-powered web app for exploring and reporting walking 
 - This is a **test version**. Reports are saved to a test database and may be cleared at any time. Please don't include personal information.
 - The server runs on a free hosting plan and goes to sleep when idle. The first request after a quiet period can take up to about a minute. The app tells you when this is happening.
 
-<!-- SCREENSHOT: add docs/screenshots/explore.png and docs/screenshots/report-form.png, then show them here with ![Explore page](docs/screenshots/explore.png) -->
+![The Explore page: a map of verified reports with a list of recent reports](docs/screenshots/explore.png)
+
+![The Report a barrier form](docs/screenshots/report-form.png)
+
+![The My reports list on the Explore page](docs/screenshots/my-reports.png)
+
+*The screenshots show sample reports on the test version.*
 
 ## The problem
 
@@ -32,7 +38,8 @@ These are problems to investigate, not claims about how common they are. Pathway
 - **Explore** community reports on an interactive map, with a list of recent reports, counts, and filters by issue category and review status.
 - **Report a barrier** with a title, category, description, and a location picked on the map. No name, email, or phone number is asked for.
 - **My reports:** reports you submit are remembered on your own device, so you can see whether yours is still waiting, or has been verified, without anyone else seeing it.
-- **Review before publishing:** every new report starts as *Pending Review* and stays hidden from the public list until a moderator verifies it.
+- **Review before publishing:** every new report starts as *Pending Review* and stays hidden from the public list until a person verifies it.
+- **Moderator page:** the project team unlocks a token-protected page at `#/moderate` to verify or delete waiting reports. Automatic screening flags reports that contain an email address, phone number, link, repeated characters, or mostly capital letters, so a person knows what to check carefully. The screening never approves or deletes anything. A person makes every decision.
 - **Clear states** for loading, empty results, errors, a sleeping server, and slow or timed-out requests.
 
 ## How it works
@@ -46,7 +53,7 @@ FastAPI server (Render)  -->  Supabase PostgreSQL
 
 1. A visitor submits a report in the browser.
 2. The FastAPI server checks it (see "Protections" below) and saves it as **Pending Review**.
-3. A moderator changes its status to **Verified** in the Supabase dashboard. There is no moderator app yet.
+3. A moderator opens the moderator page, reads the report (with any automatic warnings), and chooses **Verify** or **Reject**. Verify changes the status to **Verified**. Reject deletes the report.
 4. Only then does it appear on the public map and list.
 
 The browser never talks to the database directly. The database's public access is switched off, and only the server, using a secret key kept in environment variables, can read and write reports.
@@ -71,7 +78,9 @@ The browser never talks to the database directly. The database's public access i
 | Deployment (Vercel, Render, Supabase) | Live test deployment |
 | Reports hidden until reviewed | Working |
 | Rate limiting and duplicate guard | Working (basic, in memory) |
-| Moderation and status changes | Manual, in the Supabase dashboard |
+| Moderator page (verify or reject, token-protected) | Working |
+| Rule-based screening that flags reports for a person to check | Working (advisory only) |
+| Other status changes (Submitted to Agency, Resolved) | Manual, in the Supabase dashboard |
 | Accessibility basics: skip link, labeled controls, visible keyboard focus, keyboard-pannable map | Working, being refined |
 | Photo uploads | Not built |
 | Reporting inappropriate content | Not built |
@@ -122,7 +131,7 @@ Open the address Vite prints, usually <http://localhost:5173>. A "Sample data" b
 
    The API runs at <http://127.0.0.1:8000>, and interactive API docs are at <http://127.0.0.1:8000/docs>.
 3. **Frontend.** In a second terminal, run `npm install` and `npm run dev` in `frontend/`. With `VITE_DATA_SOURCE=api` (the default) it talks to the backend at `http://localhost:8000`.
-4. **Approve a report.** New reports are *Pending Review* and hidden. In Supabase, open *Table Editor*, `reports`, and change a row's `status` to `Verified`. It then appears in the app.
+4. **Approve a report.** New reports are *Pending Review* and hidden. Set `MODERATOR_TOKEN` in `backend/.env` (any long random string), restart the backend, open <http://localhost:5173/#/moderate>, enter the token, and choose Verify. (You can also change a row's `status` to `Verified` in the Supabase Table Editor.)
 
 Other frontend commands: `npm run build` (production build), `npm run preview`, `npm run lint`.
 
@@ -158,10 +167,10 @@ docs/       database notes, deployment notes, official reporting links
 
 Each report has: `id`, `title`, `description`, `category`, `latitude`, `longitude`, `status`, `created_at`, `photo_path` (optional, unused), and `reviewed_at` (optional).
 
-- **Categories:** `damaged_path`, `blocked_path`, `accessibility_barrier`, `missing_connection`
+- **Categories:** `damaged_path`, `blocked_path`, `accessibility_barrier`, `missing_connection`, `other`
 - **Statuses:** Pending Review, Verified, Submitted to Agency, Resolved
 
-New public reports always start as Pending Review, and only someone with database access can change a status. "Submitted to Agency" is meant to be used only after a report was actually submitted, and "Resolved" only with credible evidence.
+New public reports always start as Pending Review, and only a moderator (with the secret moderator token) or someone with database access can change a status. "Submitted to Agency" is meant to be used only after a report was actually submitted, and "Resolved" only with credible evidence.
 
 ## Deploying
 
@@ -173,6 +182,7 @@ PathwayPulse is deployed with **Vercel** (frontend), **Render** (Python API), an
 | --- | --- | --- |
 | `SUPABASE_URL` | Your Supabase project URL | Supabase dashboard, Project Settings, API |
 | `SUPABASE_SERVICE_KEY` | Your Supabase **secret / service_role** key | **Secret.** Full database access. Server only; never in the frontend |
+| `MODERATOR_TOKEN` | A long random secret string | **Secret.** Unlocks the moderator endpoints. If it is missing, the moderator endpoints stay locked. Never put it in the frontend |
 | `ALLOWED_ORIGINS` | The frontend's address, e.g. `https://YOUR-APP.vercel.app` | Several addresses separated by commas, **no spaces and no trailing slash** |
 | `PYTHON_VERSION` | A full Python version, e.g. `3.13.14` | Render needs the full version number |
 
@@ -208,15 +218,20 @@ Render's free plan puts the API to sleep after about 15 minutes without traffic,
 ## Known limitations
 
 - This is a test version: reports are saved to a test database and may be cleared at any time.
-- Moderation is manual. A developer changes a report's status by hand in the Supabase dashboard. There is no moderator app and no "report inappropriate content" button yet.
+- Moderation is done by people. The moderator page uses one shared secret token, not individual accounts, and it does not limit repeated wrong guesses yet. The automatic screening only matches simple patterns (for example, it will not catch an email written as "bob at example dot com"). There is no "report inappropriate content" button yet.
 - The rate limiter lives in the server's memory and resets when the server restarts. The duplicate guard only catches identical reports, and two simultaneous requests could still both be saved.
 - The server's free hosting plan sleeps when idle, so the first visit can be slow.
 - Photo uploads are not supported.
+- Some libraries the server depends on are not pinned to exact versions, so a rebuild could pick up newer ones.
 - There is no automated test suite. The app was checked by hand, including a small test with volunteers.
 
 ## How this was built
 
-<!-- TODO (Muhil): describe who wrote what and how AI assistance was used, in your own words. Be specific and truthful about each person's contribution. -->
+PathwayPulse was built by Muhil with help from a friend, Khazar, and an AI assistant.
+
+- **Muhil** wrote the Python backend: the FastAPI server, its connection to the Supabase database, reading and saving reports, the moderator endpoints, and the rule-based screening. He directed the project, tested each change himself, and made the decisions about what to ship.
+- **Khazar** researched the mapping side of the project, tested the app throughout, and gave feedback based on what he observed. His feedback led to real changes, including the "Other" category, the "My reports" list, a clearer explanation of the review step, and the moderator page. He also agreed to open-sourcing the project.
+- **Claude** (an AI assistant made by Anthropic) built the React and JavaScript frontend, the database setup scripts, the deployment configuration and the documentation. It also explained concepts and reviewed Muhil's backend code as he wrote it.
 
 ## Contributing and contact
 
