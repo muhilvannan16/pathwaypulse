@@ -801,3 +801,69 @@ main:focus {
   padding: 6px 12px;
   font-size: 0.9rem;
 }
+
+/* ---------- Moderator page ---------- */
+.mod-message {
+  min-height: 1.5em;
+  margin-bottom: 12px;
+  color: var(--navy-soft);
+}
+.mod-message[data-kind='error'] {
+  color: var(--danger);
+  font-weight: 600;
+}
+.mod-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.mod-bar .section-title {
+  margin: 0;
+}
+.mod-bar__actions,
+.mod-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mod-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+}
+.mod-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+.mod-item__title {
+  margin: 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+.mod-item__meta {
+  color: var(--navy-soft);
+  font-size: 0.875rem;
+}
+.mod-item__desc {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.btn--danger {
+  background: #fff;
+  color: var(--danger);
+  border: 2px solid var(--danger);
+}
+.btn--danger:hover:not(:disabled) {
+  background: #fdecea;
+}

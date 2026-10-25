@@ -3,17 +3,23 @@ import Header from './components/Header.jsx'
 import NoticeBar from './components/NoticeBar.jsx'
 import Footer from './components/Footer.jsx'
 import ExplorePage from './pages/ExplorePage.jsx'
+import ModeratePage from './pages/ModeratePage.jsx'
 import ReportFormPage from './pages/ReportFormPage.jsx'
 
 // Tiny hash router: "#/report" shows the form, anything else shows Explore.
 // Hash links need no library and work with a static host.
+// "#/moderate" is the moderator page; it is not linked from the menu.
 function routeFromHash() {
-  return window.location.hash === '#/report' ? 'report' : 'explore'
+  const hash = window.location.hash
+  if (hash === '#/report') return 'report'
+  if (hash === '#/moderate') return 'moderate'
+  return 'explore'
 }
 
 const PAGE_TITLES = {
   explore: 'PathwayPulse',
   report: 'Report a barrier – PathwayPulse',
+  moderate: 'Moderator tools – PathwayPulse',
 }
 
 export default function App() {
@@ -53,7 +59,13 @@ export default function App() {
       <Header route={route} />
       <NoticeBar />
       <main id="main" className="container" tabIndex={-1}>
-        {route === 'report' ? <ReportFormPage /> : <ExplorePage />}
+        {route === 'report' ? (
+          <ReportFormPage />
+        ) : route === 'moderate' ? (
+          <ModeratePage />
+        ) : (
+          <ExplorePage />
+        )}
       </main>
       <Footer />
     </>
