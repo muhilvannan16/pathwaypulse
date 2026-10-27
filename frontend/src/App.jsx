@@ -5,6 +5,7 @@ import Footer from './components/Footer.jsx'
 import ExplorePage from './pages/ExplorePage.jsx'
 import ModeratePage from './pages/ModeratePage.jsx'
 import ReportFormPage from './pages/ReportFormPage.jsx'
+import { warmUp } from './api/reports.js'
 
 // Tiny hash router: "#/report" shows the form, anything else shows Explore.
 // Hash links need no library and work with a static host.
@@ -25,6 +26,11 @@ const PAGE_TITLES = {
 export default function App() {
   const [route, setRoute] = useState(routeFromHash)
   const firstRender = useRef(true)
+
+  // Wake the (free-plan) server in the background as soon as the app opens.
+  useEffect(() => {
+    warmUp()
+  }, [])
 
   useEffect(() => {
     const onHashChange = () => setRoute(routeFromHash())

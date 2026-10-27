@@ -142,21 +142,76 @@ async function errorFromResponse(response) {
   })
 }
 
-async function request(path, options, signal) {
-  let response
-  try {
-    response = await fetch(`${API_URL}${path}`, { ...options, signal })
-  } catch {
-    // fetch() only rejects when the network request itself fails.
-    throw new ApiError(NETWORK_MESSAGE, { status: 0 })
+// How often to ask a sleeping server whether it is awake yet.
+const WAKE_POLL_MS = 3000
+
+// Resolves after ms, or right away if the request is cancelled (the timeout).
+function sleep(ms, signal) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms)
+    signal.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer)
+        resolve()
+      },
+      { once: true },
+    )
+  })
+}
+
+// Keeps asking GET /health until the server answers. Returns true once it
+// does, or false if the request was cancelled (the overall timeout) first.
+async function waitUntilAwake(signal) {
+  while (!signal.aborted) {
+    try {
+      const response = await fetch(`${API_URL}/health`, { signal })
+      if (response.ok) return true
+    } catch {
+      // Not reachable yet (or cancelled). Keep waiting.
+    }
+    await sleep(WAKE_POLL_MS, signal)
   }
-  if (!response.ok) throw await errorFromResponse(response)
-  try {
-    return await response.json()
-  } catch {
-    throw new ApiError('The server sent an answer we could not read.', {
-      status: response.status,
-    })
+  return false
+}
+
+// Wakes a sleeping server in the background while the visitor reads the page,
+// so their first real request is more likely to find it awake. Errors are ignored.
+export function warmUp() {
+  if (MODE !== 'api') return
+  fetch(`${API_URL}/health`).catch(() => {})
+}
+
+// onSlow is called if the server seems to be asleep, so the page can show the
+// calm "waking up" message.
+async function request(path, options, signal, onSlow) {
+  let retried = false
+  for (;;) {
+    let response
+    try {
+      response = await fetch(`${API_URL}${path}`, { ...options, signal })
+    } catch {
+      // fetch() only rejects when the request itself fails. On the free hosting
+      // plan that is also what a server that is still waking up looks like: the
+      // host can answer with an error page that has no CORS headers, which the
+      // browser reports as a plain failure. So, unless the device is offline,
+      // wait for the server to come up and try once more.
+      const offline = typeof navigator !== 'undefined' && navigator.onLine === false
+      if (!retried && !offline && !signal.aborted) {
+        retried = true
+        onSlow?.()
+        if (await waitUntilAwake(signal)) continue
+      }
+      throw new ApiError(NETWORK_MESSAGE, { status: 0 })
+    }
+    if (!response.ok) throw await errorFromResponse(response)
+    try {
+      return await response.json()
+    } catch {
+      throw new ApiError('The server sent an answer we could not read.', {
+        status: response.status,
+      })
+    }
   }
 }
 
@@ -234,7 +289,7 @@ export async function getReports({ onSlow } = {}) {
       await wait()
       return sampleReports.map((r) => ({ ...r }))
     }
-    const data = await request('/reports', undefined, signal)
+    const data = await request('/reports', undefined, signal, onSlow)
     if (!Array.isArray(data)) {
       throw new ApiError('The server sent an answer we could not read.')
     }
@@ -296,6 +351,7 @@ export async function createReport(
         body: JSON.stringify(body),
       },
       signal,
+      onSlow,
     )
     return normalizeReport(data)
   }, onSlow)
